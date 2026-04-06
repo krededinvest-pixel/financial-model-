@@ -1,0 +1,2094 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kreded Financial Model Suite</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Source+Serif+4:wght@600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+:root{
+  --primary:#28778a;--primary-dk:#1d5a6a;--primary-lt:#eaeff1;
+  --accent:#335599;--accent2:#35858d;--accent3:#3674a1;--accent4:#4554a1;
+  --bg:#f6f7f9;--muted-bg:#ebecef;--card:#fff;
+  --text:#222a39;--muted:#676f7e;--border:#e2e4e9;
+  --input-bg:#eaeff1;--focus:#338599;
+  --red:#bb1b20;--green:#1a7a4a;--amber:#b45309;
+  --radius:0.5rem;--shadow:0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.04);
+  --shadow-md:0 4px 12px rgba(0,0,0,.1);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);font-size:13px;line-height:1.5;min-width:900px}
+
+/* ── HEADER ─────────────────────────────────── */
+.hdr{background:var(--text);color:#fff;padding:0 24px;display:flex;align-items:center;gap:16px;height:58px;position:sticky;top:0;z-index:200;box-shadow:0 2px 12px rgba(0,0,0,.25)}
+.logo{font-family:'Inter',sans-serif;font-size:22px;font-weight:700;color:#fff;letter-spacing:-.5px;white-space:nowrap}
+.logo em{color:var(--primary);font-style:normal}
+.hdr-divider{width:1px;height:28px;background:rgba(255,255,255,.15);flex-shrink:0}
+.industry-wrap{flex:1;max-width:320px}
+.industry-wrap label{font-size:10px;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.6px;display:block;margin-bottom:2px}
+.industry-sel{width:100%;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.2);color:#fff;border-radius:var(--radius);padding:6px 10px;font-family:'Inter',sans-serif;font-size:13px;cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:28px}
+.industry-sel option{background:#1f2d3d;color:#fff}
+.hdr-right{margin-left:auto;display:flex;align-items:center;gap:8px}
+.scn-wrap{display:flex;align-items:center;gap:6px}
+.scn-lbl{font-size:10px;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.6px;white-space:nowrap}
+.scn-btns{display:flex;border:1px solid rgba(255,255,255,.25);border-radius:var(--radius);overflow:hidden}
+.scn-btn{border:none;background:transparent;color:rgba(255,255,255,.6);padding:5px 11px;font-size:11px;font-family:'Inter',sans-serif;cursor:pointer;transition:all .15s}
+.scn-btn.active{background:var(--primary);color:#fff}
+.scn-btn.active.down{background:#b45309}
+.scn-btn.active.up{background:#1a7a4a}
+.scn-params{display:none;align-items:center;gap:8px;font-size:11px;color:rgba(255,255,255,.7)}
+.scn-params input{width:42px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:4px;padding:3px 5px;font-size:11px;font-family:'Inter',sans-serif;text-align:center}
+.scn-params label{white-space:nowrap}
+.btn{padding:7px 16px;border-radius:var(--radius);border:none;cursor:pointer;font-family:'Inter',sans-serif;font-size:12px;font-weight:500;display:inline-flex;align-items:center;gap:6px;transition:all .15s;white-space:nowrap}
+.btn svg{width:14px;height:14px;flex-shrink:0}
+.btn-primary{background:var(--primary);color:#fff}
+.btn-primary:hover{background:var(--primary-dk)}
+.btn-ghost{background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.2)}
+.btn-ghost:hover{background:rgba(255,255,255,.18)}
+
+/* ── LAYOUT ──────────────────────────────────── */
+.main{max-width:1440px;margin:0 auto;padding:20px 24px;display:flex;flex-direction:column;gap:16px}
+
+/* ── CARD ────────────────────────────────────── */
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow)}
+.card-hdr{padding:12px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.card-hdr h2{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.8px;color:var(--muted)}
+.pill{font-size:10px;font-weight:600;padding:2px 8px;border-radius:20px;background:var(--primary);color:#fff}
+.pill.amber{background:#d97706}
+.card-body{padding:20px}
+.note{background:var(--primary-lt);border-left:3px solid var(--primary);padding:8px 12px;border-radius:0 var(--radius) var(--radius) 0;font-size:11px;color:var(--muted);margin-bottom:16px}
+.note strong{color:var(--primary)}
+
+/* ── ASSUMPTIONS ─────────────────────────────── */
+.section-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--primary);padding:4px 0 8px;border-bottom:1px solid var(--border);margin:16px 0 12px}
+.section-lbl:first-of-type{margin-top:0}
+.drivers-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px}
+.ig{display:flex;flex-direction:column;gap:3px}
+.ig label{font-size:11px;font-weight:500;color:var(--muted)}
+.ig input{background:var(--input-bg);border:1px solid var(--border);border-radius:var(--radius);padding:7px 10px;font-family:'Inter',sans-serif;font-size:13px;color:var(--text);transition:border-color .15s,box-shadow .15s;width:100%}
+.ig input:focus{outline:none;border-color:var(--focus);box-shadow:0 0 0 3px rgba(51,133,153,.15)}
+.ig .hint{font-size:10px;color:var(--muted);line-height:1.3}
+.ig.calc input{background:#fff;color:var(--muted);cursor:default;pointer-events:none}
+
+/* ── TABS ─────────────────────────────────────── */
+.tabs{display:flex;border-bottom:2px solid var(--border);padding:0 20px}
+.tab{padding:11px 18px;cursor:pointer;font-size:12px;font-weight:500;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .15s;display:flex;align-items:center;gap:6px}
+.tab:hover{color:var(--text)}
+.tab.active{color:var(--primary);border-bottom-color:var(--primary);font-weight:600}
+.tab-panel{display:none}
+.tab-panel.active{display:block}
+
+/* ── FINANCIAL TABLES ─────────────────────────── */
+.tbl-wrap{overflow-x:auto;border-radius:0 0 var(--radius) var(--radius);position:relative}
+table.ft{width:100%;border-collapse:separate;border-spacing:0;font-size:12px;font-variant-numeric:tabular-nums}
+table.ft th{background:var(--text);color:#fff;padding:9px 14px;font-weight:500;font-size:11px;white-space:nowrap}
+table.ft th:first-child{text-align:left;min-width:260px}
+table.ft th:not(:first-child){text-align:right}
+table.ft td{padding:6px 14px;border-bottom:1px solid var(--border);white-space:nowrap;vertical-align:middle}
+table.ft td:first-child{text-align:left;background:var(--card);border-right:1px solid var(--border)}
+table.ft td:not(:first-child){text-align:right}
+table.ft tr:nth-child(even) td{background:var(--bg)}
+table.ft tr.sec-hdr td{background:var(--primary)!important;color:#fff!important;font-weight:600;font-size:10px;text-transform:uppercase;letter-spacing:.6px}
+table.ft tr.sec-spc td{padding:0!important;border:none!important;height:0!important;line-height:0!important;font-size:0!important;background:transparent!important}
+table.ft tr.subtotal td{background:var(--muted-bg)!important;font-weight:600}
+table.ft tr.total td{background:var(--text)!important;color:#fff!important;font-weight:700;font-size:13px}
+table.ft tr.ebitda-row td{background:#e6f4f1!important;color:var(--primary-dk)!important;font-weight:700}
+table.ft .i1{padding-left:28px}
+table.ft .i2{padding-left:44px}
+table.ft .neg{color:var(--red)}
+table.ft .pct{color:var(--muted);font-style:italic;font-size:11px}
+table.ft .chk-ok{color:var(--green);font-weight:700}
+table.ft .chk-err{color:var(--red);font-weight:700}
+.dscr-banner{display:inline-flex;align-items:center;gap:6px;font-size:11px;padding:3px 10px;border-radius:20px;font-weight:600;margin-left:8px}
+.dscr-ok{background:#d1fae5;color:#065f46}
+.dscr-warn{background:#fef3c7;color:#92400e}
+.dscr-bad{background:#fee2e2;color:#7f1d1d}
+
+/* ── DASHBOARD ─────────────────────────────────── */
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(195px,1fr));gap:12px;margin-bottom:16px}
+.kpi{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;position:relative;overflow:hidden;box-shadow:var(--shadow)}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--primary)}
+.kpi.warn::before{background:var(--amber)}
+.kpi.danger::before{background:var(--red)}
+.kpi.good::before{background:var(--green)}
+.kpi-lbl{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.7px;color:var(--muted);margin-bottom:6px}
+.kpi-val{font-size:26px;font-weight:700;color:var(--text);line-height:1;letter-spacing:-.5px}
+.kpi-sub{font-size:11px;color:var(--muted);margin-top:4px}
+.kpi-badge{display:inline-flex;align-items:center;font-size:10px;padding:2px 7px;border-radius:20px;font-weight:600;margin-top:6px}
+.badge-g{background:#d1fae5;color:#065f46}
+.badge-y{background:#fef3c7;color:#92400e}
+.badge-r{background:#fee2e2;color:#7f1d1d}
+.charts-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.chart-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow)}
+.chart-card h3{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--muted);margin-bottom:12px}
+.chart-box{position:relative;height:230px}
+
+/* ── LEGEND BAR ──────────────────────────────── */
+.legend-bar{display:flex;align-items:center;gap:14px;font-size:11px;color:var(--muted);padding:8px 0 0}
+.ld{width:12px;height:12px;border-radius:2px;flex-shrink:0}
+.ld.input{background:var(--input-bg);border:1px solid var(--focus)}
+.ld.calc{background:#fff;border:1px solid var(--border)}
+.legend-bar span{display:flex;align-items:center;gap:4px}
+
+/* ── HISTORICAL COLUMNS ──────────────────────── */
+.hist-col{background:#f0f4f8!important;color:#555;font-style:italic}
+table.ft td.hist-col:first-child{background:#f0f4f8!important}
+
+/* ── RATIO COLORS ────────────────────────────── */
+.ratio-good{background:#d1fae5;color:#065f46;font-weight:600}
+.ratio-warn{background:#fef3c7;color:#92400e;font-weight:600}
+.ratio-bad{background:#fee2e2;color:#7f1d1d;font-weight:600}
+
+/* ── COLLAPSIBLE HIST SECTION ────────────────── */
+.hist-toggle{cursor:pointer;user-select:none;display:flex;align-items:center;gap:6px}
+.hist-toggle::after{content:'▶';font-size:9px;transition:transform .15s}
+.hist-toggle.open::after{transform:rotate(90deg)}
+.hist-body{display:none}
+.hist-body.open{display:block}
+
+/* ── FOOTER ──────────────────────────────────── */
+.footer{text-align:center;padding:20px;font-size:11px;color:var(--muted);border-top:1px solid var(--border)}
+.footer a{color:var(--primary);text-decoration:none}
+
+@media print{.hdr,.legend-bar,.footer{display:none}.card{box-shadow:none;border-color:#ccc;page-break-inside:avoid}}
+
+/* ── DEMO MODE ───────────────────────────────── */
+#demo-banner{display:none;background:var(--primary-dk);color:#fff;text-align:center;padding:9px 20px;font-size:12px;font-weight:500;position:sticky;top:58px;z-index:199;gap:14px;align-items:center;justify-content:center}
+#demo-banner a{background:#fff;color:var(--primary-dk);font-size:11px;font-weight:700;padding:4px 14px;border-radius:var(--radius);text-decoration:none;white-space:nowrap;display:inline-block}
+.demo-wm{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-28deg);font-size:54px;font-weight:800;color:rgba(40,119,138,.09);pointer-events:none;user-select:none;z-index:5;white-space:nowrap;letter-spacing:2px}
+button[disabled]{opacity:.45;cursor:not-allowed}
+</style>
+</head>
+<body>
+
+<header class="hdr">
+  <div class="logo">kre<em>ded</em></div>
+  <div class="hdr-divider"></div>
+  <div class="industry-wrap">
+    <label>Industry Model</label>
+    <select class="industry-sel" id="industrySelect">
+      <option value="">— Select an Industry —</option>
+      <option value="hotel">Hotel / Hospitality</option>
+      <option value="multifamily">Multifamily / Apartment</option>
+      <option value="selfstore">Self-Storage</option>
+      <option value="retail">Retail</option>
+      <option value="restaurant">Restaurant</option>
+      <option value="seniorliving">Senior Living</option>
+      <option value="healthcare">Healthcare</option>
+      <option value="childcare">Childcare</option>
+      <option value="manufacturing">Manufacturing</option>
+      <option value="oilgas">Oil &amp; Gas</option>
+      <option value="sawmill">Sawmill / Lumber</option>
+      <option value="waste">Waste Management</option>
+      <option value="commfacility">Community Facilities</option>
+      <option value="university">Universities / Higher Ed</option>
+    </select>
+  </div>
+  <div class="hdr-divider"></div>
+  <div class="scn-wrap">
+    <span class="scn-lbl">Scenario</span>
+    <div class="scn-btns">
+      <button id="scn-base" class="scn-btn active" onclick="setScenario('base')">Base</button>
+      <button id="scn-downside" class="scn-btn down" onclick="setScenario('downside')">▼ Downside</button>
+      <button id="scn-upside" class="scn-btn up" onclick="setScenario('upside')">▲ Upside</button>
+    </div>
+    <div class="scn-params" id="scn-params">
+      <label id="scn-p1-lbl">Rev −<input type="number" id="sp-revHaircut" value="15" min="0" max="50" step="1" oninput="recalculate()">%</label>
+      <label id="scn-p2-lbl">Exp +<input type="number" id="sp-expStress" value="5" min="0" max="50" step="1" oninput="recalculate()">%</label>
+    </div>
+  </div>
+  <div class="hdr-divider"></div>
+  <div class="hdr-right">
+    <button class="btn btn-ghost" onclick="exportExcel()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M8 12h8M8 8h8M8 16h5"/></svg>
+      Export Excel
+    </button>
+    <button class="btn btn-primary" onclick="exportPDF()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      Export PDF
+    </button>
+  </div>
+</header>
+
+<div id="demo-banner">
+  🔒 Demo — 3 of 14 industries &nbsp;|&nbsp; Excel &amp; PDF export disabled
+  <a href="https://www.kreded.com/" id="demo-buy-btn">Get Full Access →</a>
+</div>
+
+<div class="main" id="appMain" style="display:none">
+
+  <!-- WELCOME replaced by model on load -->
+  <div class="card" id="assumptions-card">
+    <div class="card-hdr">
+      <h2 id="assumptionsTitle">Assumptions</h2>
+      <span class="pill">Inputs</span>
+      <div class="legend-bar" style="margin-left:auto">
+        <span><div class="ld input"></div> User Input</span>
+        <span><div class="ld calc"></div> Calculated</span>
+      </div>
+    </div>
+    <div class="card-body" id="assumptionsBody"></div>
+  </div>
+
+  <div class="card" id="statements-card">
+    <div class="card-hdr">
+      <h2 id="stmtTitle">Financial Statements</h2>
+      <span class="pill amber">5-Year Projection</span>
+    </div>
+    <div class="tabs" id="stmtTabs">
+      <div class="tab active" data-tab="is" onclick="switchTab(this,'is')">Income Statement</div>
+      <div class="tab" data-tab="bs" onclick="switchTab(this,'bs')">Balance Sheet</div>
+      <div class="tab" data-tab="cf" onclick="switchTab(this,'cf')">Cash Flow</div>
+      <div class="tab" data-tab="ratios" onclick="switchTab(this,'ratios')">Financial Ratios</div>
+    </div>
+    <div class="tab-panel active" id="tab-is"><div class="tbl-wrap" id="tbl-is"></div></div>
+    <div class="tab-panel" id="tab-bs"><div class="tbl-wrap" id="tbl-bs"></div></div>
+    <div class="tab-panel" id="tab-cf"><div class="tbl-wrap" id="tbl-cf"></div></div>
+    <div class="tab-panel" id="tab-ratios"><div class="tbl-wrap" id="tbl-ratios"></div></div>
+  </div>
+
+  <div class="card" id="dashboard-card">
+    <div class="card-hdr"><h2>Performance Dashboard</h2><span class="pill">Year 1 – 5 Summary</span></div>
+    <div class="card-body">
+      <div class="kpi-grid" id="kpiGrid"></div>
+      <div class="charts-row">
+        <div class="chart-card">
+          <h3>Revenue &amp; EBITDA Trend</h3>
+          <div class="chart-box"><canvas id="chartTrend"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <h3 id="chart2Title">Industry Breakdown</h3>
+          <div class="chart-box"><canvas id="chartBreak"></canvas></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<!-- Welcome screen (shown before industry selected) -->
+<div id="welcome" style="max-width:760px;margin:60px auto;padding:0 24px;text-align:center">
+  <div style="font-size:48px;margin-bottom:16px">📊</div>
+  <h1 style="font-family:'Inter',sans-serif;font-size:32px;font-weight:700;color:var(--text);margin-bottom:12px;letter-spacing:-.5px">Kreded Financial Model Suite</h1>
+  <p style="color:var(--muted);font-size:15px;margin-bottom:32px;line-height:1.7">Professional-grade, three-statement financial models for <strong>14 industries</strong>. Enter your operating assumptions and instantly generate 5-year projections with a complete Income Statement, Balance Sheet, Cash Flow, and KPI dashboard.</p>
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:32px;font-size:12px;color:var(--muted)">
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:10px;font-weight:500">🏨 Hotel</div>
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:10px;font-weight:500">🏢 Multifamily</div>
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:10px;font-weight:500">📦 Self-Storage</div>
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:10px;font-weight:500">🛒 Retail</div>
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:10px;font-weight:500">🍽️ Restaurant</div>
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:10px;font-weight:500">🏥 Senior Living</div>
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:10px;font-weight:500">🩺 Healthcare</div>
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:10px;font-weight:500">👶 Childcare</div>
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:10px;font-weight:500">🏭 Manufacturing</div>
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:10px;font-weight:500">⛽ Oil &amp; Gas</div>
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:10px;font-weight:500">🌲 Sawmill</div>
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:10px;font-weight:500">♻️ Waste Mgmt</div>
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:10px;font-weight:500">🏛️ Comm. Facilities</div>
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:10px;font-weight:500">🎓 Universities</div>
+  </div>
+  <p style="color:var(--muted);font-size:13px">Select an industry from the dropdown above to begin.</p>
+</div>
+
+<div class="footer">Prepared by <a href="https://kreded.com" target="_blank">Kreded</a> · Strategic Credit Conversations &amp; Better Credit Discipline · &copy; 2026</div>
+
+<script>
+'use strict';
+
+// ═══════════════════════════════════════════════════════════
+//  GLOBAL STATE
+// ═══════════════════════════════════════════════════════════
+let currentIndustry = null;
+let currentModel = null;
+let chartTrend = null;
+let chartBreak = null;
+let activeScenario = 'base';
+
+function scenarioMultipliers(){
+  const hc=parseFloat(document.getElementById('sp-revHaircut')?.value)||15;
+  const es=parseFloat(document.getElementById('sp-expStress')?.value)||5;
+  if(activeScenario==='downside') return {r:1-hc/100, x:1+es/100};
+  if(activeScenario==='upside')   return {r:1+hc/100, x:1-es/100};
+  return {r:1, x:1};
+}
+function setScenario(s){
+  activeScenario=s;
+  document.querySelectorAll('.scn-btn').forEach(b=>b.classList.remove('active'));
+  const btn=document.getElementById('scn-'+s);
+  if(btn) btn.classList.add('active');
+  const pp=document.getElementById('scn-params');
+  if(pp){
+    pp.style.display=s==='base'?'none':'flex';
+    const lbl1=document.getElementById('scn-p1-lbl');
+    const lbl2=document.getElementById('scn-p2-lbl');
+    if(lbl1&&lbl2){
+      if(s==='downside'){ lbl1.firstChild.textContent='Rev −'; lbl2.firstChild.textContent='Exp +'; }
+      else { lbl1.firstChild.textContent='Rev +'; lbl2.firstChild.textContent='Exp −'; }
+    }
+  }
+  if(currentModel) renderAll();
+}
+
+// ═══════════════════════════════════════════════════════════
+//  NUMBER FORMATTING
+// ═══════════════════════════════════════════════════════════
+function fD(n){ // full dollars with commas: $1,234,567 or ($1,234,567)
+  if(n===null||n===undefined||isNaN(n)) return '—';
+  const neg=n<0;
+  const s='$'+Math.round(Math.abs(n)).toLocaleString('en-US');
+  return neg?`(${s})`:s;
+}
+function fP(n,d=1){ if(isNaN(n)||n===null) return '—'; return n.toFixed(d)+'%'; }
+function fX(n,d=2){ if(isNaN(n)||n===null) return '—'; return n.toFixed(d)+'x'; }
+function fI(n){ if(isNaN(n)||n===null) return '—'; return Math.round(n).toLocaleString(); }
+
+// ═══════════════════════════════════════════════════════════
+//  DEBT SERVICE CALCULATOR
+// ═══════════════════════════════════════════════════════════
+function pmt(rate, years, pv){
+  if(pv<=0) return 0;
+  if(rate===0) return pv/years;
+  const r=rate/12, n=years*12;
+  return pv*r*Math.pow(1+r,n)/(Math.pow(1+r,n)-1);
+}
+function buildDebtSchedule(loan, rate, amortYrs){
+  const ann = pmt(rate, amortYrs, loan)*12;
+  const sched=[]; let bal=loan;
+  for(let y=0;y<5;y++){
+    if(bal<=0){ sched.push({interest:0,principal:0,payment:0,endBalance:0}); continue; }
+    const interest=bal*rate;
+    const principal=Math.min(Math.max(0,ann-interest),bal);
+    bal=Math.max(0,bal-principal);
+    sched.push({interest,principal,payment:interest+principal,endBalance:bal});
+  }
+  return sched;
+}
+
+// ═══════════════════════════════════════════════════════════
+//  INDUSTRY CONFIGURATIONS
+// ═══════════════════════════════════════════════════════════
+const INDUSTRIES = {
+
+hotel:{
+  label:'Hotel / Hospitality', icon:'🏨',
+  driverGroups:[
+    {label:'Room Revenue Drivers',drivers:[
+      {id:'rooms',label:'Total Rooms',def:150,fmt:'int',hint:'Total available guest rooms'},
+      {id:'occ_y1',label:'Year 1 Occupancy (%)',def:72,fmt:'pct1',hint:'Annual average occupancy in Year 1'},
+      {id:'occ_change',label:'Annual Occ. Change (%/yr)',def:0.5,fmt:'pct1',hint:'Occupancy pts gained/lost per year'},
+      {id:'adr_y1',label:'Year 1 ADR ($)',def:185,fmt:'dollar',hint:'Average daily rate per occupied room night'},
+      {id:'adr_growth',label:'Annual ADR Growth (%/yr)',def:3,fmt:'pct1',hint:'ADR escalation per year'},
+    ]},
+    {label:'Additional Revenue Streams',drivers:[
+      {id:'fnb_per_room',label:'F&B ($/occ. room/night)',def:35,fmt:'dollar',hint:'Food & beverage per occupied room night'},
+      {id:'fnb_growth',label:'F&B Growth (%/yr)',def:2.5,fmt:'pct1',hint:'Annual F&B revenue growth'},
+      {id:'spa_per_room',label:'Spa ($/occ. room/night)',def:0,fmt:'dollar',hint:'Spa revenue per occupied room night (0 if no spa)'},
+      {id:'spa_growth',label:'Spa Growth (%/yr)',def:3,fmt:'pct1',hint:'Annual spa revenue growth'},
+      {id:'resort_fee',label:'Resort Fee ($/occ. room/night)',def:0,fmt:'dollar',hint:'Daily resort/destination fee (0 if none)'},
+      {id:'mtg_pct',label:'Meeting/Banquet (% of Rooms Rev)',def:8,fmt:'pct1',hint:'Meeting & banquet revenue as % of rooms revenue'},
+    ]},
+    {label:'Departmental Expense %s',drivers:[
+      {id:'rooms_dept_pct',label:'Rooms Dept. Cost (% of Rooms Rev)',def:28,fmt:'pct1',hint:'Rooms department operating cost %'},
+      {id:'fnb_dept_pct',label:'F&B Dept. Cost (% of F&B Rev)',def:72,fmt:'pct1',hint:'F&B department operating cost %'},
+      {id:'spa_dept_pct',label:'Spa Dept. Cost (% of Spa Rev)',def:60,fmt:'pct1',hint:'Spa department operating cost %'},
+    ]},
+    {label:'Undistributed Expenses & Fees (% of Total Rev)',drivers:[
+      {id:'admin_pct',label:'Admin & General (%)',def:8,fmt:'pct1',hint:'Administrative & general expense'},
+      {id:'sales_mktg_pct',label:'Sales & Marketing (%)',def:6,fmt:'pct1',hint:'Sales & marketing expense'},
+      {id:'prop_ops_pct',label:'Property Ops & Maintenance (%)',def:6,fmt:'pct1',hint:'Property operations & maintenance'},
+      {id:'utilities_pct',label:'Utilities (%)',def:4,fmt:'pct1',hint:'Utilities expense'},
+      {id:'mgmt_fee_pct',label:'Management Fee (%)',def:3,fmt:'pct1',hint:'Management fee'},
+      {id:'ffe_reserve_pct',label:'FF&E Reserve (%)',def:4,fmt:'pct1',hint:'Furniture, fixtures & equipment reserve'},
+    ]},
+  ],
+  get drivers(){ return this.driverGroups.flatMap(g=>g.drivers); },
+  calc(d,yr,g,sm={r:1,x:1}){
+    const adjADR=d.adr_y1*Math.pow(1+(d.adr_growth||3)/100,yr);
+    const adjOcc=Math.min(((d.occ_y1||72)+(d.occ_change||0.5)*yr)/100,0.98);
+    const nights=(d.rooms||150)*adjOcc*365;
+    const adjFnb=(d.fnb_per_room||35)*Math.pow(1+(d.fnb_growth||2.5)/100,yr);
+    const adjSpa=(d.spa_per_room||0)*Math.pow(1+(d.spa_growth||3)/100,yr);
+    // Revenue (apply sm.r)
+    const roomRev=nights*adjADR*sm.r;
+    const fnbRev=nights*adjFnb*sm.r;
+    const spaRev=nights*adjSpa*sm.r;
+    const resortRev=nights*(d.resort_fee||0)*sm.r;
+    const mtgRev=roomRev*((d.mtg_pct||8)/100);
+    const miscRev=(roomRev+fnbRev+spaRev+resortRev+mtgRev)*0.02;
+    const totalRev=roomRev+fnbRev+spaRev+resortRev+mtgRev+miscRev;
+    // Departmental expenses (apply sm.x)
+    const roomsDeptExp=roomRev*((d.rooms_dept_pct||28)/100)*sm.x;
+    const fnbDeptExp=fnbRev*((d.fnb_dept_pct||72)/100)*sm.x;
+    const spaDeptExp=spaRev*((d.spa_dept_pct||60)/100)*sm.x;
+    const mtgDeptExp=mtgRev*0.35*sm.x;
+    const totalDeptExp=roomsDeptExp+fnbDeptExp+spaDeptExp+mtgDeptExp;
+    const gop=totalRev-totalDeptExp;
+    // Undistributed (apply sm.x)
+    const adminExp=totalRev*((d.admin_pct||8)/100)*sm.x;
+    const salesMktgExp=totalRev*((d.sales_mktg_pct||6)/100)*sm.x;
+    const propOpsExp=totalRev*((d.prop_ops_pct||6)/100)*sm.x;
+    const utilitiesExp=totalRev*((d.utilities_pct||4)/100)*sm.x;
+    const totalUndist=adminExp+salesMktgExp+propOpsExp+utilitiesExp;
+    const ebitdar=gop-totalUndist;
+    // Fees & reserves (apply sm.x)
+    const mgmtFee=totalRev*((d.mgmt_fee_pct||3)/100)*sm.x;
+    const ffeReserve=totalRev*((d.ffe_reserve_pct||4)/100)*sm.x;
+    const totalFees=mgmtFee+ffeReserve;
+    const ebitda=ebitdar-totalFees;
+    const totalCOGS=totalDeptExp;
+    const grossProfit=gop;
+    const opex=totalUndist+totalFees;
+    const salaries=roomsDeptExp*0.60+fnbDeptExp*0.50+adminExp*0.60+salesMktgExp*0.65;
+    const occupancy=propOpsExp+utilitiesExp;
+    const otherOp=mgmtFee+ffeReserve+spaDeptExp+mtgDeptExp;
+    const revpar=adjADR*adjOcc;
+    return {totalRev,
+      lines:[
+        {l:'Room Revenue',v:roomRev,indent:1},
+        {l:'Food & Beverage Revenue',v:fnbRev,indent:1},
+        {l:'Spa & Wellness Revenue',v:spaRev,indent:1},
+        {l:'Resort / Destination Fees',v:resortRev,indent:1},
+        {l:'Meeting, Banquet & Event Revenue',v:mtgRev,indent:1},
+        {l:'Miscellaneous Income',v:miscRev,indent:1},
+        {l:'Total Revenue',v:totalRev,bold:true,subtotal:true},
+        {l:'DEPARTMENTAL EXPENSES',isSec:true},
+        {l:'Rooms Department',v:-roomsDeptExp,indent:1,neg:true},
+        {l:'Food & Beverage Department',v:-fnbDeptExp,indent:1,neg:true},
+        {l:'Spa Department',v:-spaDeptExp,indent:1,neg:true},
+        {l:'Meeting & Banquet Department',v:-mtgDeptExp,indent:1,neg:true},
+        {l:'Total Departmental Expenses',v:-totalDeptExp,bold:true,subtotal:true,neg:true},
+        {l:'Gross Operating Profit (GOP)',v:gop,bold:true},
+        {l:'GOP Margin',v:gop/totalRev*100,isPct:true},
+        {l:'UNDISTRIBUTED OPERATING EXPENSES',isSec:true},
+        {l:'Administrative & General',v:-adminExp,indent:1,neg:true},
+        {l:'Sales & Marketing',v:-salesMktgExp,indent:1,neg:true},
+        {l:'Property Operations & Maintenance',v:-propOpsExp,indent:1,neg:true},
+        {l:'Utilities',v:-utilitiesExp,indent:1,neg:true},
+        {l:'Total Undistributed Expenses',v:-totalUndist,bold:true,subtotal:true,neg:true},
+        {l:'EBITDAR',v:ebitdar,bold:true},
+        {l:'EBITDAR Margin',v:ebitdar/totalRev*100,isPct:true},
+        {l:'MANAGEMENT FEES & RESERVES',isSec:true},
+        {l:'Management Fee',v:-mgmtFee,indent:1,neg:true},
+        {l:'FF&E Reserve',v:-ffeReserve,indent:1,neg:true},
+        {l:'Total Fees & Reserves',v:-totalFees,bold:true,subtotal:true,neg:true},
+      ],
+      opex,salaries,occupancy,otherOp,ebitda,grossProfit,totalCOGS,
+      kpi1:{label:'RevPAR',v:revpar,fmt:'dollar'},
+      kpi2:{label:'EBITDA / Room',v:ebitda/(d.rooms||150),fmt:'dollar'},
+      chart:{labels:['Rooms','F&B','Spa','Meetings','Other'],data:[roomRev,fnbRev,spaRev,mtgRev,resortRev+miscRev]},
+    };
+  },
+},
+
+multifamily:{
+  label:'Multifamily / Apartment', icon:'🏢',
+  drivers:[
+    {id:'units',label:'Total Units',def:200,fmt:'int',hint:'Total rentable apartment units'},
+    {id:'occ',label:'Occupancy Rate (%)',def:94,fmt:'pct1',hint:'Physical occupancy (economic occ typically 2% lower)'},
+    {id:'occ_change',label:'Annual Occ. Change (%/yr)',def:0,fmt:'pct1',hint:'Occupancy change per year (+/-)'},
+    {id:'rent',label:'Monthly Rent / Unit ($)',def:1450,fmt:'dollar',hint:'Average effective monthly rent'},
+    {id:'rentGrowth',label:'Annual Rent Growth (%/yr)',def:3,fmt:'pct1',hint:'Year-over-year rent escalation'},
+    {id:'opex_pu',label:'Operating Expenses / Unit / Year ($)',def:5200,fmt:'dollar',hint:'Mgmt, maintenance, insurance, taxes, admin'},
+  ],
+  calc(d,yr,g,sm={r:1,x:1}){
+    const rent=d.rent*Math.pow(1+(d.rentGrowth||3)/100,yr)*sm.r;
+    const occ=Math.min((d.occ+(d.occ_change||0)*yr)/100,0.99);
+    const gpr=d.units*rent*12;
+    const vacancy=gpr*(1-occ);
+    const egi=gpr-vacancy;
+    const otherRev=egi*0.04;
+    const totalRev=egi+otherRev;
+    const opex=(d.opex_pu*d.units)*Math.pow(1+g.expGrowth/100,yr)*sm.x;
+    const mgmt=opex*0.10;
+    const mtce=opex*0.28;
+    const insur=opex*0.08;
+    const taxes=opex*0.32;
+    const admin=opex*0.22;
+    const noi=totalRev-opex;
+    const ebitda=noi;
+    const totalCOGS=0;
+    return {totalRev,
+      lines:[
+        {l:'Gross Potential Rent',v:gpr,indent:1},
+        {l:'Vacancy & Credit Loss',v:-vacancy,indent:1,neg:true},
+        {l:'Effective Gross Income (EGI)',v:egi,bold:true,subtotal:true},
+        {l:'Other Income (Laundry, Fees, Pet)',v:otherRev,indent:1},
+        {l:'Total Revenue',v:totalRev,bold:true,subtotal:true},
+        {l:'Management Fees',v:-mgmt,indent:1,neg:true},
+        {l:'Maintenance & Repairs',v:-mtce,indent:1,neg:true},
+        {l:'Property Insurance',v:-insur,indent:1,neg:true},
+        {l:'Real Estate Taxes',v:-taxes,indent:1,neg:true},
+        {l:'Administrative & Other',v:-admin,indent:1,neg:true},
+      ],
+      opex,salaries:mgmt+admin,occupancy:insur+taxes,otherOp:mtce,ebitda,grossProfit:totalRev,totalCOGS:0,
+      kpi1:{label:'NOI / Unit / Year',v:noi/d.units,fmt:'dollar'},
+      kpi2:{label:'Economic Occupancy',v:(egi/gpr)*100,fmt:'pct'},
+      chart:{labels:['EGI','Other Income','Vacancy'],data:[egi,otherRev,vacancy]},
+    };
+  },
+},
+
+selfstore:{
+  label:'Self-Storage', icon:'📦',
+  drivers:[
+    {id:'sqft',label:'Total Rentable Sq Ft',def:60000,fmt:'int',hint:'Net rentable square footage'},
+    {id:'occ',label:'Physical Occupancy (%)',def:88,fmt:'pct1',hint:'Avg physical occupancy over the year'},
+    {id:'occ_change',label:'Annual Occ. Change (%/yr)',def:0.5,fmt:'pct1',hint:'Occupancy pts gained/lost per year'},
+    {id:'rpsf',label:'Revenue / Sq Ft / Year ($)',def:14.5,fmt:'dollar',hint:'Effective rent per rentable sq ft'},
+    {id:'rpsf_growth',label:'Annual Rate Growth (%/yr)',def:3,fmt:'pct1',hint:'Annual rate per sq ft increase'},
+    {id:'opex_pct',label:'Operating Expense Ratio (%)',def:38,fmt:'pct1',hint:'OpEx as % of gross revenue'},
+    {id:'other_pct',label:'Ancillary Revenue (% of Base)',def:8,fmt:'pct1',hint:'Insurance, truck rental, supplies'},
+  ],
+  calc(d,yr,g,sm={r:1,x:1}){
+    const adjRpsf=d.rpsf*Math.pow(1+(d.rpsf_growth||3)/100,yr)*sm.r;
+    const adjOcc=Math.min((d.occ+(d.occ_change||0.5)*yr)/100,0.99);
+    const X=Math.pow(1+g.expGrowth/100,yr)*sm.x;
+    const baseRev=d.sqft*adjOcc*adjRpsf;
+    const otherRev=baseRev*(d.other_pct/100);
+    const totalRev=baseRev+otherRev;
+    const opex=totalRev*(d.opex_pct/100)*X;
+    const mgmt=opex*0.22;
+    const pay=opex*0.30;
+    const util=opex*0.10;
+    const other=opex*0.38;
+    const noi=totalRev-opex;
+    return {totalRev,
+      lines:[
+        {l:'Storage Rental Revenue',v:baseRev,indent:1},
+        {l:'Ancillary Revenue',v:otherRev,indent:1},
+        {l:'Total Revenue',v:totalRev,bold:true,subtotal:true},
+        {l:'Payroll & Benefits',v:-pay,indent:1,neg:true},
+        {l:'Management & Marketing',v:-mgmt,indent:1,neg:true},
+        {l:'Utilities & Insurance',v:-util,indent:1,neg:true},
+        {l:'Property Taxes & Other',v:-other,indent:1,neg:true},
+      ],
+      opex,salaries:pay,occupancy:util+other*0.5,otherOp:mgmt+other*0.5,ebitda:noi,grossProfit:totalRev,totalCOGS:0,
+      kpi1:{label:'NOI / Sq Ft',v:noi/d.sqft,fmt:'dollar'},
+      kpi2:{label:'Physical Occupancy',v:adjOcc*100,fmt:'pct'},
+      chart:{labels:['Storage Rental','Ancillary'],data:[baseRev,otherRev]},
+    };
+  },
+},
+
+retail:{
+  label:'Retail', icon:'🛒',
+  drivers:[
+    {id:'sqft',label:'Gross Leasable Area (Sq Ft)',def:25000,fmt:'int',hint:'Total retail floor space'},
+    {id:'spsf',label:'Gross Sales / Sq Ft / Year ($)',def:330,fmt:'dollar',hint:'Gross retail sales per sq ft before returns'},
+    {id:'spsf_growth',label:'Annual Sales Growth (%/yr)',def:3,fmt:'pct1',hint:'Annual gross sales per sq ft growth'},
+    {id:'return_pct',label:'Returns & Allowances (% of Gross Sales)',def:3,fmt:'pct1',hint:'Customer returns and markdown allowances'},
+    {id:'gm',label:'Gross Margin on Net Sales (%)',def:48,fmt:'pct1',hint:'After cost of merchandise'},
+    {id:'occ_pct',label:'Occupancy Cost (% of Net Sales)',def:12,fmt:'pct1',hint:'Rent, CAM, RE taxes'},
+    {id:'inv_turns',label:'Inventory Turns / Year',def:5,fmt:'decimal',hint:'Annualized inventory turnover'},
+  ],
+  calc(d,yr,g,sm={r:1,x:1}){
+    const adjSpsf=d.spsf*Math.pow(1+(d.spsf_growth||3)/100,yr)*sm.r;
+    const X=Math.pow(1+g.expGrowth/100,yr)*sm.x;
+    const grossSales=d.sqft*adjSpsf;
+    const returns=grossSales*((d.return_pct||3)/100);
+    const totalRev=grossSales-returns; // Net Sales
+    const cogs=totalRev*(1-d.gm/100);
+    const grossProfit=totalRev-cogs;
+    const occCost=totalRev*(d.occ_pct/100)*X;
+    const labor=totalRev*0.18*X;
+    const marketing=totalRev*0.04*X;
+    const admin=totalRev*0.05*X;
+    const opex=occCost+labor+marketing+admin;
+    const ebitda=grossProfit-opex;
+    return {totalRev,
+      lines:[
+        {l:'Gross Sales',v:grossSales,indent:1},
+        {l:'Returns & Allowances',v:-returns,indent:1,neg:true},
+        {l:'Net Sales',v:totalRev,bold:true,subtotal:true},
+        {l:'Cost of Merchandise Sold',v:-cogs,indent:1,neg:true},
+        {l:'Gross Profit',v:grossProfit,bold:true,subtotal:true},
+        {l:'Gross Margin',v:grossProfit/totalRev*100,isPct:true},
+        {l:'Labor & Employee Costs',v:-labor,indent:1,neg:true},
+        {l:'Occupancy Costs (Rent/CAM/Taxes)',v:-occCost,indent:1,neg:true},
+        {l:'Marketing & Advertising',v:-marketing,indent:1,neg:true},
+        {l:'G&A / Administrative',v:-admin,indent:1,neg:true},
+      ],
+      opex,salaries:labor,occupancy:occCost,otherOp:marketing+admin,ebitda,grossProfit,totalCOGS:cogs,
+      kpi1:{label:'Net Sales / Sq Ft',v:totalRev/d.sqft,fmt:'dollar'},
+      kpi2:{label:'Inventory Turn',v:d.inv_turns,fmt:'decimal'},
+      chart:{labels:['Gross Profit','Labor','Occupancy','Other OpEx'],data:[grossProfit,labor,occCost,marketing+admin]},
+    };
+  },
+},
+
+restaurant:{
+  label:'Restaurant', icon:'🍽️',
+  drivers:[
+    {id:'locs',label:'Number of Locations (Yr 1)',def:3,fmt:'int',hint:'Open and operating units in Year 1'},
+    {id:'new_locs',label:'New Locations / Year',def:0,fmt:'int',hint:'Additional units opened each year'},
+    {id:'auv',label:'Average Unit Volume / Year ($)',def:1400000,fmt:'dollar',hint:'Annual sales per location'},
+    {id:'auv_growth',label:'Annual AUV Growth (%/yr)',def:3,fmt:'pct1',hint:'Annual AUV growth rate'},
+    {id:'food_pct',label:'Food & Beverage Cost (%)',def:30,fmt:'pct1',hint:'Cost of goods sold as % of sales'},
+    {id:'labor_pct',label:'Labor Cost (%)',def:32,fmt:'pct1',hint:'Hourly, management, benefits'},
+    {id:'occ_pct',label:'Occupancy Cost (% of Sales)',def:8,fmt:'pct1',hint:'Rent, utilities, maintenance'},
+  ],
+  calc(d,yr,g,sm={r:1,x:1}){
+    const adjAuv=d.auv*Math.pow(1+(d.auv_growth||3)/100,yr)*sm.r;
+    const adjLocs=(d.locs||3)+(d.new_locs||0)*yr;
+    const X=Math.pow(1+g.expGrowth/100,yr)*sm.x;
+    const totalRev=adjLocs*adjAuv;
+    const cogs=totalRev*(d.food_pct/100);
+    const grossProfit=totalRev-cogs;
+    const labor=totalRev*(d.labor_pct/100)*X;
+    const occ=totalRev*(d.occ_pct/100)*X;
+    const marketing=totalRev*0.04*X;
+    const admin=totalRev*0.05*X;
+    const opex=labor+occ+marketing+admin;
+    const ebitda=grossProfit-opex;
+    return {totalRev,
+      lines:[
+        {l:'Net Restaurant Sales',v:totalRev,indent:1},
+        {l:'Avg Unit Volume (AUV)',v:adjAuv,indent:2},
+        {l:'Number of Locations',v:adjLocs,indent:2,isCount:true},
+        {l:'Food & Beverage Cost',v:-cogs,indent:1,neg:true},
+        {l:'Gross Profit',v:grossProfit,bold:true,subtotal:true},
+        {l:'Gross Margin',v:grossProfit/totalRev*100,isPct:true},
+        {l:'Labor — Hourly & Management',v:-labor,indent:1,neg:true},
+        {l:'Occupancy — Rent & Utilities',v:-occ,indent:1,neg:true},
+        {l:'Marketing & Local Advertising',v:-marketing,indent:1,neg:true},
+        {l:'G&A / Royalties / Other',v:-admin,indent:1,neg:true},
+      ],
+      opex,salaries:labor,occupancy:occ,otherOp:marketing+admin,ebitda,grossProfit,totalCOGS:cogs,
+      kpi1:{label:'4-Wall EBITDA Margin',v:ebitda/totalRev*100,fmt:'pct'},
+      kpi2:{label:'EBITDA / Location',v:ebitda/adjLocs,fmt:'dollar'},
+      chart:{labels:['Gross Profit','Labor','Occupancy','Other'],data:[grossProfit,labor,occ,marketing+admin]},
+    };
+  },
+},
+
+seniorliving:{
+  label:'Senior Living', icon:'🏥',
+  drivers:[
+    {id:'units',label:'Total Units / Beds',def:120,fmt:'int',hint:'Licensed independent, assisted, and memory care units'},
+    {id:'occ',label:'Occupancy Rate (%)',def:87,fmt:'pct1',hint:'Average physical occupancy'},
+    {id:'occ_change',label:'Annual Occ. Change (%/yr)',def:0.5,fmt:'pct1',hint:'Occupancy pts gained/lost per year'},
+    {id:'rent',label:'Monthly Revenue / Occupied Unit ($)',def:4800,fmt:'dollar',hint:'Blended rate across IL/AL/MC levels'},
+    {id:'rent_growth',label:'Annual Rate Growth (%/yr)',def:3,fmt:'pct1',hint:'Annual monthly rate escalation'},
+    {id:'care_premium',label:'Care Services Premium (% of Rent)',def:25,fmt:'pct1',hint:'Extra revenue from care levels above base rent'},
+    {id:'opex_pou',label:'Operating Cost / Occupied Unit / Month ($)',def:3200,fmt:'dollar',hint:'Staffing, food, housekeeping, medical supplies'},
+  ],
+  calc(d,yr,g,sm={r:1,x:1}){
+    const adjRent=d.rent*Math.pow(1+(d.rent_growth||3)/100,yr)*sm.r;
+    const X=Math.pow(1+g.expGrowth/100,yr)*sm.x;
+    const occ=Math.min((d.occ+(d.occ_change||0.5)*yr)/100,0.99);
+    const occupied=d.units*occ;
+    const baseRev=occupied*adjRent*12;
+    const careRev=baseRev*(d.care_premium/100);
+    const ancillary=baseRev*0.05;
+    const totalRev=baseRev+careRev+ancillary;
+    const staffing=occupied*d.opex_pou*12*0.58*X;
+    const food=occupied*d.opex_pou*12*0.18*X;
+    const housekeeping=occupied*d.opex_pou*12*0.08*X;
+    const admin=occupied*d.opex_pou*12*0.16*X;
+    const opex=staffing+food+housekeeping+admin;
+    const noi=totalRev-opex;
+    return {totalRev,
+      lines:[
+        {l:'Base Rental Revenue',v:baseRev,indent:1},
+        {l:'Care Services Revenue',v:careRev,indent:1},
+        {l:'Ancillary Services',v:ancillary,indent:1},
+        {l:'Total Revenue',v:totalRev,bold:true,subtotal:true},
+        {l:'Staffing & Labor',v:-staffing,indent:1,neg:true},
+        {l:'Food, Dietary & Activities',v:-food,indent:1,neg:true},
+        {l:'Housekeeping & Environmental',v:-housekeeping,indent:1,neg:true},
+        {l:'Administration & Other',v:-admin,indent:1,neg:true},
+      ],
+      opex,salaries:staffing,occupancy:food+housekeeping,otherOp:admin,ebitda:noi,grossProfit:totalRev,totalCOGS:0,
+      kpi1:{label:'NOI / Unit / Year',v:noi/d.units,fmt:'dollar'},
+      kpi2:{label:'Occupancy-Adj. Margin',v:noi/totalRev*100,fmt:'pct'},
+      chart:{labels:['Base Rent','Care Services','Ancillary'],data:[baseRev,careRev,ancillary]},
+    };
+  },
+},
+
+healthcare:{
+  label:'Healthcare', icon:'🩺',
+  drivers:[
+    {id:'beds',label:'Licensed Beds / Daily Visits',def:80,fmt:'int',hint:'Beds for inpatient; daily visits for outpatient'},
+    {id:'util',label:'Occupancy / Utilization (%)',def:78,fmt:'pct1',hint:'Average bed occupancy or visit utilization rate'},
+    {id:'util_change',label:'Annual Utilization Change (%/yr)',def:0.5,fmt:'pct1',hint:'Utilization pts gained/lost per year'},
+    {id:'rev_pa',label:'Net Revenue / Admission ($)',def:8500,fmt:'dollar',hint:'After contractual adjustments and bad debt'},
+    {id:'rev_growth',label:'Annual Rev Growth (%/yr)',def:3,fmt:'pct1',hint:'Annual revenue per admission growth'},
+    {id:'medicare_pct',label:'Medicare / Medicaid Mix (%)',def:62,fmt:'pct1',hint:'% of payer mix from government programs'},
+    {id:'opex_pct',label:'Operating Cost / Admission (% of Rev)',def:82,fmt:'pct1',hint:'Clinical labor, supplies, facilities, admin'},
+  ],
+  calc(d,yr,g,sm={r:1,x:1}){
+    const adjRevPa=d.rev_pa*Math.pow(1+(d.rev_growth||3)/100,yr)*sm.r;
+    const X=Math.pow(1+g.expGrowth/100,yr)*sm.x;
+    const alos=4.5; // avg length of stay
+    const adjUtil=Math.min((d.util+(d.util_change||0.5)*yr)/100,0.99);
+    const admissions=d.beds*adjUtil*365/alos;
+    const netPatRev=admissions*adjRevPa;
+    const otherRev=netPatRev*0.06;
+    const totalRev=netPatRev+otherRev;
+    const clinicalLabor=totalRev*(d.opex_pct/100)*0.50*X;
+    const supplies=totalRev*(d.opex_pct/100)*0.22*X;
+    const facilities=totalRev*(d.opex_pct/100)*0.14*X;
+    const admin=totalRev*(d.opex_pct/100)*0.14*X;
+    const opex=clinicalLabor+supplies+facilities+admin;
+    const ebitda=totalRev-opex;
+    return {totalRev,
+      lines:[
+        {l:'Net Patient Revenue',v:netPatRev,indent:1},
+        {l:'Other Operating Revenue',v:otherRev,indent:1},
+        {l:'Total Revenue',v:totalRev,bold:true,subtotal:true},
+        {l:'Clinical Labor (Nursing, Allied Health)',v:-clinicalLabor,indent:1,neg:true},
+        {l:'Medical Supplies & Pharmacy',v:-supplies,indent:1,neg:true},
+        {l:'Facilities & Plant Operations',v:-facilities,indent:1,neg:true},
+        {l:'Administration & Overhead',v:-admin,indent:1,neg:true},
+      ],
+      opex,salaries:clinicalLabor,occupancy:facilities,otherOp:supplies+admin,ebitda,grossProfit:totalRev,totalCOGS:0,
+      kpi1:{label:'EBITDA / Bed',v:ebitda/d.beds,fmt:'dollar'},
+      kpi2:{label:'Operating Margin',v:ebitda/totalRev*100,fmt:'pct'},
+      chart:{labels:['Govt (Medicare/Medicaid)','Commercial','Other'],data:[netPatRev*(d.medicare_pct/100),netPatRev*(1-d.medicare_pct/100)*0.85,netPatRev*(1-d.medicare_pct/100)*0.15+otherRev]},
+    };
+  },
+},
+
+childcare:{
+  label:'Childcare', icon:'👶',
+  drivers:[
+    {id:'capacity',label:'Licensed Capacity (Children)',def:120,fmt:'int',hint:'Total licensed enrollment capacity'},
+    {id:'enroll',label:'Enrollment Rate (%)',def:88,fmt:'pct1',hint:'Average enrollment as % of capacity'},
+    {id:'enroll_change',label:'Annual Enrollment Change (%/yr)',def:0.5,fmt:'pct1',hint:'Enrollment pts gained/lost per year'},
+    {id:'tuition',label:'Weekly Tuition / Child ($)',def:340,fmt:'dollar',hint:'Average weekly rate across age groups'},
+    {id:'tuition_growth',label:'Annual Tuition Growth (%/yr)',def:3,fmt:'pct1',hint:'Annual tuition rate escalation'},
+    {id:'subsidy_pct',label:'Government Subsidy Revenue (% of Tuition)',def:18,fmt:'pct1',hint:'CCDF, Head Start, or other public funding'},
+    {id:'opex_pct',label:'Operating Expenses (% of Revenue)',def:78,fmt:'pct1',hint:'Staffing (largest), rent, supplies, food'},
+  ],
+  calc(d,yr,g,sm={r:1,x:1}){
+    const adjTuition=d.tuition*Math.pow(1+(d.tuition_growth||3)/100,yr)*sm.r;
+    const X=Math.pow(1+g.expGrowth/100,yr)*sm.x;
+    const adjEnroll=Math.min((d.enroll+(d.enroll_change||0.5)*yr)/100,0.99);
+    const enrolled=d.capacity*adjEnroll;
+    const tuitionRev=enrolled*adjTuition*52;
+    const subsidyRev=tuitionRev*(d.subsidy_pct/100);
+    const totalRev=tuitionRev+subsidyRev;
+    const opex=totalRev*(d.opex_pct/100)*X;
+    const staffing=opex*0.60;
+    const rent=opex*0.15;
+    const food=opex*0.10;
+    const other=opex*0.15;
+    const ebitda=totalRev-opex;
+    return {totalRev,
+      lines:[
+        {l:'Tuition Revenue',v:tuitionRev,indent:1},
+        {l:'Government Subsidy / Grant Revenue',v:subsidyRev,indent:1},
+        {l:'Total Revenue',v:totalRev,bold:true,subtotal:true},
+        {l:'Staffing & Benefits (Teachers, Aides)',v:-staffing,indent:1,neg:true},
+        {l:'Facility Rent & Occupancy',v:-rent,indent:1,neg:true},
+        {l:'Food & Nutrition Program',v:-food,indent:1,neg:true},
+        {l:'Supplies, Admin & Insurance',v:-other,indent:1,neg:true},
+      ],
+      opex,salaries:staffing,occupancy:rent,otherOp:food+other,ebitda,grossProfit:totalRev,totalCOGS:0,
+      kpi1:{label:'Revenue / Child / Year',v:totalRev/enrolled,fmt:'dollar'},
+      kpi2:{label:'Tuition Coverage Ratio',v:tuitionRev/opex,fmt:'decimal'},
+      chart:{labels:['Tuition','Subsidy'],data:[tuitionRev,subsidyRev]},
+    };
+  },
+},
+
+manufacturing:{
+  label:'Manufacturing', icon:'🏭',
+  drivers:[
+    {id:'units',label:'Units Produced / Year (Base)',def:50000,fmt:'int',hint:'Annual production volume at Year 0'},
+    {id:'vol_growth',label:'Annual Volume Growth (%/yr)',def:2,fmt:'pct1',hint:'Annual production volume growth rate'},
+    {id:'rev_pu',label:'Revenue / Unit ($)',def:85,fmt:'dollar',hint:'Average selling price per unit'},
+    {id:'price_growth',label:'Annual Price Growth (%/yr)',def:3,fmt:'pct1',hint:'Annual selling price escalation'},
+    {id:'cogs_pct',label:'Cost of Goods Sold (%)',def:58,fmt:'pct1',hint:'Direct materials, labor, overhead'},
+    {id:'util',label:'Capacity Utilization (%)',def:80,fmt:'pct1',hint:'Production vs. installed capacity'},
+    {id:'capex_pct',label:'Annual CapEx (% of Revenue)',def:5,fmt:'pct1',hint:'Maintenance + growth capital expenditures'},
+  ],
+  calc(d,yr,g,sm={r:1,x:1}){
+    const adjRevPu=d.rev_pu*Math.pow(1+(d.price_growth||3)/100,yr)*sm.r;
+    const adjUnits=Math.round(d.units*Math.pow(1+(d.vol_growth||2)/100,yr));
+    const X=Math.pow(1+g.expGrowth/100,yr)*sm.x;
+    const totalRev=adjUnits*adjRevPu;
+    const cogs=totalRev*(d.cogs_pct/100)*X;
+    const grossProfit=totalRev-cogs;
+    const sga=totalRev*0.12*X;
+    const rd=totalRev*0.03*X;
+    const ebitda=grossProfit-sga-rd;
+    return {totalRev,
+      lines:[
+        {l:'Net Revenue',v:totalRev,indent:1},
+        {l:'Volume (Units)',v:adjUnits,indent:2,isCount:true},
+        {l:'Cost of Goods Sold',v:-cogs,indent:1,neg:true},
+        {l:'Direct Materials',v:-cogs*0.50,indent:2,neg:true},
+        {l:'Direct Labor',v:-cogs*0.30,indent:2,neg:true},
+        {l:'Manufacturing Overhead',v:-cogs*0.20,indent:2,neg:true},
+        {l:'Gross Profit',v:grossProfit,bold:true,subtotal:true},
+        {l:'Gross Margin',v:grossProfit/totalRev*100,isPct:true},
+        {l:'Selling, General & Administrative',v:-sga,indent:1,neg:true},
+        {l:'Research & Development',v:-rd,indent:1,neg:true},
+      ],
+      opex:sga+rd,salaries:sga*0.55+rd*0.70,occupancy:sga*0.20,otherOp:sga*0.25+rd*0.30,ebitda,grossProfit,totalCOGS:cogs,
+      kpi1:{label:'Gross Margin',v:grossProfit/totalRev*100,fmt:'pct'},
+      kpi2:{label:'Capacity Utilization',v:d.util,fmt:'pct'},
+      chart:{labels:['Materials','Labor','Overhead','Gross Profit'],data:[cogs*0.50,cogs*0.30,cogs*0.20,grossProfit]},
+    };
+  },
+},
+
+oilgas:{
+  label:'Oil & Gas (E&P)', icon:'⛽',
+  drivers:[
+    {id:'boe_day',label:'Daily Production (BOE/Day)',def:500,fmt:'int',hint:'Barrels of oil equivalent per day'},
+    {id:'oil_pct',label:'Oil vs. Gas Mix (% Oil)',def:65,fmt:'pct1',hint:'Percent of production that is oil (vs. gas/NGL)'},
+    {id:'oil_price',label:'Oil Price ($/Bbl)',def:72,fmt:'dollar',hint:'Realized wellhead price per barrel'},
+    {id:'gas_price',label:'Gas Price ($/MCF)',def:2.80,fmt:'dollar',hint:'Realized natural gas price'},
+    {id:'price_change',label:'Annual Price Change (%/yr)',def:2,fmt:'pct1',hint:'Annual oil & gas price escalation (or decline if negative)'},
+    {id:'loe',label:'Lease Operating Cost ($/BOE)',def:18,fmt:'dollar',hint:'All-in field operating cost per BOE produced'},
+    {id:'loe_growth',label:'Annual LOE Growth (%/yr)',def:3,fmt:'pct1',hint:'Annual lease operating cost escalation'},
+  ],
+  calc(d,yr,g,sm={r:1,x:1}){
+    const adjOilPrice=d.oil_price*Math.pow(1+(d.price_change||2)/100,yr)*sm.r;
+    const adjGasPrice=d.gas_price*Math.pow(1+(d.price_change||2)/100,yr)*sm.r;
+    const adjLoe=d.loe*Math.pow(1+(d.loe_growth||3)/100,yr)*sm.x;
+    const declineRate=0.12; // typical 12% annual production decline for E&P
+    const prod=d.boe_day*365*Math.pow(1-declineRate,yr);
+    const oilProd=prod*(d.oil_pct/100);
+    const gasProd=prod*(1-d.oil_pct/100)*5.614; // BOE to MCF (1 BOE = 5.614 MCF)
+    const oilRev=oilProd*adjOilPrice;
+    const gasRev=gasProd*adjGasPrice;
+    const totalRev=oilRev+gasRev;
+    const loe=prod*adjLoe;
+    const prod_taxes=totalRev*0.07;
+    const ga=totalRev*0.10;
+    const totalCOGS=loe+prod_taxes;
+    const grossProfit=totalRev-totalCOGS;
+    const ebitdax=grossProfit-ga; // EBITDAX (before exploration expense)
+    return {totalRev,
+      lines:[
+        {l:'Oil Revenue',v:oilRev,indent:1},
+        {l:'Natural Gas & NGL Revenue',v:gasRev,indent:1},
+        {l:'Total Revenue',v:totalRev,bold:true,subtotal:true},
+        {l:'Lease Operating Expense (LOE)',v:-loe,indent:1,neg:true},
+        {l:'Production & Severance Taxes',v:-prod_taxes,indent:1,neg:true},
+        {l:'Total Operating Costs',v:-totalCOGS,bold:true,subtotal:true,neg:true},
+        {l:'Gross Profit',v:grossProfit,bold:true},
+        {l:'G&A — Corporate Overhead',v:-ga,indent:1,neg:true},
+      ],
+      opex:ga,salaries:ga*0.55,occupancy:0,otherOp:ga*0.45,ebitda:ebitdax,grossProfit,totalCOGS,
+      kpi1:{label:'Netback ($/BOE)',v:(totalRev-totalCOGS)/prod,fmt:'dollar'},
+      kpi2:{label:'EBITDAX Margin',v:ebitdax/totalRev*100,fmt:'pct'},
+      chart:{labels:['Oil Revenue','Gas/NGL Revenue'],data:[oilRev,gasRev]},
+    };
+  },
+},
+
+sawmill:{
+  label:'Sawmill / Lumber', icon:'🌲',
+  drivers:[
+    {id:'mbf',label:'Annual Production (MBF, Base)',def:12000,fmt:'int',hint:'Thousand board feet at Year 0'},
+    {id:'vol_growth',label:'Annual Volume Growth (%/yr)',def:1,fmt:'pct1',hint:'Annual production volume growth rate'},
+    {id:'lumber_price',label:'Lumber Price ($/MBF)',def:490,fmt:'dollar',hint:'Average realized lumber sales price'},
+    {id:'price_change',label:'Annual Price Change (%/yr)',def:2,fmt:'pct1',hint:'Annual lumber price escalation (or decline if negative)'},
+    {id:'log_cost',label:'Log Cost ($/MBF)',def:220,fmt:'dollar',hint:'Delivered log cost (raw material)'},
+    {id:'recovery',label:'Log-to-Lumber Recovery Rate (%)',def:48,fmt:'pct1',hint:'Lumber volume recovered per log volume input'},
+    {id:'opex_pct',label:'Mill Operating Expenses (% of Revenue)',def:28,fmt:'pct1',hint:'Labor, energy, maintenance, overhead'},
+  ],
+  calc(d,yr,g,sm={r:1,x:1}){
+    const adjLumberPrice=d.lumber_price*Math.pow(1+(d.price_change||2)/100,yr)*sm.r;
+    const adjMbf=d.mbf*Math.pow(1+(d.vol_growth||1)/100,yr);
+    const X=Math.pow(1+g.expGrowth/100,yr)*sm.x;
+    const lumberRev=adjMbf*adjLumberPrice;
+    const residualRev=lumberRev*0.08; // chips, sawdust
+    const totalRev=lumberRev+residualRev;
+    const logCost=adjMbf*(1/((d.recovery/100)*1))*d.log_cost*X; // logs needed / recovery = input MBF
+    const totalCOGS=logCost;
+    const grossProfit=totalRev-totalCOGS;
+    const millOpex=totalRev*(d.opex_pct/100)*X;
+    const labor=millOpex*0.45;
+    const energy=millOpex*0.20;
+    const mtce=millOpex*0.20;
+    const other=millOpex*0.15;
+    const ebitda=grossProfit-millOpex;
+    return {totalRev,
+      lines:[
+        {l:'Lumber Sales Revenue',v:lumberRev,indent:1},
+        {l:'Residual / By-Product Revenue',v:residualRev,indent:1},
+        {l:'Total Revenue',v:totalRev,bold:true,subtotal:true},
+        {l:'Log Raw Material Cost',v:-logCost,indent:1,neg:true},
+        {l:'Total Cost of Revenue',v:-totalCOGS,bold:true,subtotal:true,neg:true},
+        {l:'Gross Profit',v:grossProfit,bold:true},
+        {l:'Gross Margin',v:grossProfit/totalRev*100,isPct:true},
+        {l:'Mill Labor & Benefits',v:-labor,indent:1,neg:true},
+        {l:'Energy & Utilities',v:-energy,indent:1,neg:true},
+        {l:'Equipment Maintenance',v:-mtce,indent:1,neg:true},
+        {l:'Administration & Other',v:-other,indent:1,neg:true},
+      ],
+      opex:millOpex,salaries:labor,occupancy:energy,otherOp:mtce+other,ebitda,grossProfit,totalCOGS,
+      kpi1:{label:'Log-to-Lumber Spread ($/MBF)',v:adjLumberPrice-d.log_cost,fmt:'dollar'},
+      kpi2:{label:'EBITDA / MBF',v:ebitda/adjMbf,fmt:'dollar'},
+      chart:{labels:['Lumber Revenue','By-Product','Log Cost','Mill OpEx'],data:[lumberRev,residualRev,logCost,millOpex]},
+    };
+  },
+},
+
+waste:{
+  label:'Waste Management', icon:'♻️',
+  drivers:[
+    {id:'tons',label:'Tons Collected / Year (Base)',def:85000,fmt:'int',hint:'Total municipal solid waste tons at Year 0'},
+    {id:'vol_growth',label:'Annual Volume Growth (%/yr)',def:2,fmt:'pct1',hint:'Annual tons growth (new routes, contracts)'},
+    {id:'tip_fee',label:'Tipping Fee ($/Ton)',def:62,fmt:'dollar',hint:'Gate rate charged at disposal facility'},
+    {id:'fee_growth',label:'Annual Fee Growth (%/yr)',def:3,fmt:'pct1',hint:'Annual tipping fee escalation'},
+    {id:'recycle_rev',label:'Recycling Revenue ($/Ton)',def:18,fmt:'dollar',hint:'Commodity revenue from sorted recyclables'},
+    {id:'route_cost',label:'Route Operating Cost ($/Ton)',def:28,fmt:'dollar',hint:'Driver labor, fuel, maintenance per ton'},
+    {id:'fleet_capex',label:'Annual Fleet CapEx ($K)',def:800,fmt:'dollar',hint:'Vehicle replacement and maintenance CapEx (in $thousands)'},
+  ],
+  calc(d,yr,g,sm={r:1,x:1}){
+    const adjTipFee=d.tip_fee*Math.pow(1+(d.fee_growth||3)/100,yr)*sm.r;
+    const adjTons=d.tons*Math.pow(1+(d.vol_growth||2)/100,yr);
+    const X=Math.pow(1+g.expGrowth/100,yr)*sm.x;
+    const collectionRev=adjTons*adjTipFee;
+    const recycleRev=adjTons*0.25*d.recycle_rev*sm.r; // 25% recyclable
+    const totalRev=collectionRev+recycleRev;
+    const routeCost=adjTons*d.route_cost*X;
+    const dispCost=adjTons*adjTipFee*0.35*X; // disposal/tipping cost
+    const totalCOGS=routeCost+dispCost;
+    const grossProfit=totalRev-totalCOGS;
+    const labor=totalCOGS*0.40;
+    const fuel=totalCOGS*0.22;
+    const ga=totalRev*0.08*X;
+    const ebitda=grossProfit-ga;
+    return {totalRev,
+      lines:[
+        {l:'Collection & Tipping Revenue',v:collectionRev,indent:1},
+        {l:'Recycling Commodity Revenue',v:recycleRev,indent:1},
+        {l:'Total Revenue',v:totalRev,bold:true,subtotal:true},
+        {l:'Route Operating Costs (Labor, Fuel)',v:-routeCost,indent:1,neg:true},
+        {l:'Disposal & Transfer Station Costs',v:-dispCost,indent:1,neg:true},
+        {l:'Total Direct Costs',v:-totalCOGS,bold:true,subtotal:true,neg:true},
+        {l:'Gross Profit',v:grossProfit,bold:true},
+        {l:'G&A & Overhead',v:-ga,indent:1,neg:true},
+      ],
+      opex:ga,salaries:labor,occupancy:fuel,otherOp:ga,ebitda,grossProfit,totalCOGS,
+      kpi1:{label:'Revenue / Ton',v:totalRev/adjTons,fmt:'dollar'},
+      kpi2:{label:'EBITDA / Ton',v:ebitda/adjTons,fmt:'dollar'},
+      chart:{labels:['Collection Rev.','Recycling Rev.'],data:[collectionRev,recycleRev]},
+    };
+  },
+},
+
+commfacility:{
+  label:'Community Facilities', icon:'🏛️',
+  drivers:[
+    {id:'members',label:'Total Memberships (Base)',def:1800,fmt:'int',hint:'Active individual or household memberships at Year 0'},
+    {id:'member_growth',label:'Annual Member Growth (%/yr)',def:2,fmt:'pct1',hint:'Annual membership growth rate'},
+    {id:'monthly_fee',label:'Monthly Membership Fee ($)',def:65,fmt:'dollar',hint:'Average fee across membership tiers'},
+    {id:'fee_growth',label:'Annual Fee Growth (%/yr)',def:3,fmt:'pct1',hint:'Annual membership fee escalation'},
+    {id:'prog_rev',label:'Program Revenue / Member / Year ($)',def:320,fmt:'dollar',hint:'Classes, rentals, concessions per member'},
+    {id:'grant_rev',label:'Annual Grants & Public Funding ($K)',def:250,fmt:'dollar',hint:'Government grants, foundations (in $thousands)'},
+    {id:'opex_pct',label:'Operating Expenses (% of Revenue)',def:72,fmt:'pct1',hint:'Staffing, facility, programming, admin'},
+  ],
+  calc(d,yr,g,sm={r:1,x:1}){
+    const adjFee=d.monthly_fee*Math.pow(1+(d.fee_growth||3)/100,yr)*sm.r;
+    const adjMembers=Math.round(d.members*Math.pow(1+(d.member_growth||2)/100,yr));
+    const X=Math.pow(1+g.expGrowth/100,yr)*sm.x;
+    const memberRev=adjMembers*adjFee*12;
+    const programRev=adjMembers*d.prog_rev*sm.r;
+    const grantRev=d.grant_rev*1000; // convert $K to $
+    const totalRev=memberRev+programRev+grantRev;
+    const opex=totalRev*(d.opex_pct/100)*X;
+    const staffing=opex*0.52;
+    const facility=opex*0.25;
+    const programming=opex*0.13;
+    const admin=opex*0.10;
+    const ebitda=totalRev-opex;
+    return {totalRev,
+      lines:[
+        {l:'Membership Revenue',v:memberRev,indent:1},
+        {l:'Program, Rental & Concession Revenue',v:programRev,indent:1},
+        {l:'Grants & Public Funding',v:grantRev,indent:1},
+        {l:'Total Revenue',v:totalRev,bold:true,subtotal:true},
+        {l:'Staffing & Benefits',v:-staffing,indent:1,neg:true},
+        {l:'Facility Operations & Maintenance',v:-facility,indent:1,neg:true},
+        {l:'Programming Costs',v:-programming,indent:1,neg:true},
+        {l:'Administration & Marketing',v:-admin,indent:1,neg:true},
+      ],
+      opex,salaries:staffing,occupancy:facility,otherOp:programming+admin,ebitda,grossProfit:totalRev,totalCOGS:0,
+      kpi1:{label:'Revenue / Member',v:totalRev/adjMembers,fmt:'dollar'},
+      kpi2:{label:'Operating Margin',v:ebitda/totalRev*100,fmt:'pct'},
+      chart:{labels:['Membership','Programs','Grants'],data:[memberRev,programRev,grantRev]},
+    };
+  },
+},
+
+university:{
+  label:'Universities / Higher Ed', icon:'🎓',
+  drivers:[
+    {id:'fte',label:'FTE Student Enrollment (Base)',def:3500,fmt:'int',hint:'Full-time equivalent enrolled students at Year 0'},
+    {id:'enroll_change',label:'Annual Enrollment Change (%/yr)',def:0.5,fmt:'pct1',hint:'Annual FTE enrollment growth (or decline if negative)'},
+    {id:'tuition',label:'Tuition & Fees / Student / Year ($)',def:22000,fmt:'dollar',hint:'Gross tuition before aid and discounting'},
+    {id:'tuition_growth',label:'Annual Tuition Growth (%/yr)',def:3,fmt:'pct1',hint:'Annual tuition rate escalation'},
+    {id:'rb',label:'Room & Board / Student / Year ($)',def:12000,fmt:'dollar',hint:'Auxiliary housing and dining revenue'},
+    {id:'endow_ret',label:'Endowment & Grant Revenue ($K)',def:4500,fmt:'dollar',hint:'Annual spendable endowment + grants (in $thousands)'},
+    {id:'opex_pct',label:'Operating Expenses (% of Revenue)',def:90,fmt:'pct1',hint:'Academic programs, facilities, admin, debt service'},
+  ],
+  calc(d,yr,g,sm={r:1,x:1}){
+    const adjTuition=d.tuition*Math.pow(1+(d.tuition_growth||3)/100,yr)*sm.r;
+    const adjFte=Math.round(d.fte*Math.pow(1+(d.enroll_change||0.5)/100,yr));
+    const X=Math.pow(1+g.expGrowth/100,yr)*sm.x;
+    const tuitionRev=adjFte*adjTuition;
+    const auxRev=adjFte*d.rb*sm.r;
+    const endowRev=d.endow_ret*1000;
+    const contribs=tuitionRev*0.08;
+    const totalRev=tuitionRev+auxRev+endowRev+contribs;
+    const opex=totalRev*(d.opex_pct/100)*X;
+    const academic=opex*0.42;
+    const auxExp=opex*0.18;
+    const admin=opex*0.22;
+    const facilities=opex*0.18;
+    const ebitda=totalRev-opex;
+    return {totalRev,
+      lines:[
+        {l:'Tuition & Fees Revenue',v:tuitionRev,indent:1},
+        {l:'Auxiliary (Room & Board)',v:auxRev,indent:1},
+        {l:'Endowment Distribution & Grants',v:endowRev,indent:1},
+        {l:'Contributions & Other Revenue',v:contribs,indent:1},
+        {l:'Total Revenue',v:totalRev,bold:true,subtotal:true},
+        {l:'Academic Programs & Instruction',v:-academic,indent:1,neg:true},
+        {l:'Auxiliary Operations',v:-auxExp,indent:1,neg:true},
+        {l:'Institutional Administration',v:-admin,indent:1,neg:true},
+        {l:'Facilities & Plant Operations',v:-facilities,indent:1,neg:true},
+      ],
+      opex,salaries:academic*0.70+admin*0.60,occupancy:facilities,otherOp:auxExp+academic*0.30+admin*0.40,ebitda,grossProfit:totalRev,totalCOGS:0,
+      kpi1:{label:'Revenue / FTE Student',v:totalRev/adjFte,fmt:'dollar'},
+      kpi2:{label:'Endowment / FTE',v:(d.endow_ret*1000)/adjFte,fmt:'dollar'},
+      chart:{labels:['Tuition','Room & Board','Endowment/Grants','Other'],data:[tuitionRev,auxRev,endowRev,contribs]},
+    };
+  },
+},
+
+}; // end INDUSTRIES
+
+// ═══════════════════════════════════════════════════════════
+//  BUILD FULL 5-YEAR MODEL
+// ═══════════════════════════════════════════════════════════
+function buildModel(industryKey){
+  const ind = INDUSTRIES[industryKey];
+  const g = getGlobals();
+  const debt = buildDebtSchedule(g.loanAmt, g.intRate/100, g.amortYrs);
+  const taxRate = g.taxRate/100;
+
+  const years=[]; // array of per-year model objects
+  const openingRE = g.initCash + g.initPPE - g.loanAmt - g.initEquity;
+  let cumDA=0, cumCapex=0, cumRE=openingRE, cashBalance=g.initCash;
+  let prevAR=0, prevInv=0, prevAP=0, prevAccrued=0;
+
+  const sm = scenarioMultipliers();
+  for(let yr=0;yr<5;yr++){
+    const is = ind.calc(getDrivers(), yr, g, sm);
+    const { totalRev, ebitda, grossProfit, totalCOGS, opex, salaries, occupancy, otherOp } = is;
+
+    // D&A and CapEx
+    const annualCapex = g.annualCapex;
+    cumCapex += annualCapex;
+    const grossPPE = g.initPPE + cumCapex;
+    const da = grossPPE * (g.depRate/100);
+    cumDA += da;
+    const netPPE = grossPPE - cumDA;
+
+    // Income statement
+    const ebit = ebitda - da;
+    const intExp = debt[yr].interest;
+    const ebt = ebit - intExp;
+    const taxes = Math.max(0, ebt * taxRate);
+    const ni = ebt - taxes;
+    cumRE += ni - g.distributions;
+
+    // Balance sheet items
+    const ar = totalRev * (g.arDays/365);
+    const inv = totalCOGS>0 ? totalCOGS*(g.invDays/365) : 0;
+    const ap = (totalCOGS+opex) * (g.apDays/365);
+    const accrued = opex * 0.10;
+    const ltdEndBal = debt[yr].endBalance;
+    const currentLTD = yr<4 ? debt[yr+1].principal : ltdEndBal;
+    const ncLTD = Math.max(0, ltdEndBal - currentLTD);
+
+    // Cash Flow
+    const deltaAR = ar - prevAR;
+    const deltaInv = inv - prevInv;
+    const deltaAP = ap - prevAP;
+    const deltaAccrued = accrued - prevAccrued;
+    const cfo = ni + da - deltaAR - deltaInv + deltaAP + deltaAccrued;
+    const cfi = -annualCapex;
+    const cff = -debt[yr].principal - g.distributions;
+    const netCF = cfo + cfi + cff;
+    const begCash = cashBalance;
+    cashBalance = begCash + netCF;
+
+    // Total equity
+    const paidIn = g.initEquity;
+    const retainedEarnings = cumRE;
+    const totalEquity = paidIn + retainedEarnings;
+
+    // Total assets & liabilities
+    const totalCurrentAssets = cashBalance + ar + inv;
+    const totalAssets = totalCurrentAssets + netPPE;
+    const totalCurrentLiab = ap + accrued + currentLTD;
+    const totalLiab = totalCurrentLiab + ncLTD;
+    const totalLiabEquity = totalLiab + totalEquity;
+    const bsCheck = Math.abs(totalAssets - totalLiabEquity) < 1; // should balance
+
+    prevAR=ar; prevInv=inv; prevAP=ap; prevAccrued=accrued;
+
+    years.push({
+      yr, label:`Year ${yr+1}`,
+      // IS
+      ...is, da, ebit, intExp, ebt, taxes, ni, ebitda,
+      // BS
+      cashBalance, ar, inv, grossPPE, cumDA, netPPE,
+      totalCurrentAssets, totalAssets,
+      ap, accrued, currentLTD, ncLTD,
+      totalCurrentLiab, totalLiab,
+      paidIn, retainedEarnings, totalEquity,
+      totalLiabEquity, bsCheck,
+      // CF
+      cfo, cfi, cff, netCF, begCash,
+      deltaAR, deltaInv, deltaAP, deltaAccrued,
+      principal: debt[yr].principal,
+      // KPIs
+      dscr: debt[yr].payment>0 ? ebitda/debt[yr].payment : null,
+      ebitdaMarginPct: ebitda/totalRev*100,
+      netMarginPct: ni/totalRev*100,
+      roa: totalAssets>0 ? ni/totalAssets*100 : 0,
+    });
+  }
+  return {industryKey, years, ind, g};
+}
+
+// ═══════════════════════════════════════════════════════════
+//  DRIVER & GLOBAL INPUT GETTERS
+// ═══════════════════════════════════════════════════════════
+function getDrivers(){
+  const d={};
+  document.querySelectorAll('#driverInputs .ig input').forEach(el=>{
+    d[el.dataset.id]=parseFloat(el.value)||0;
+  });
+  return d;
+}
+function getGlobals(){
+  const g={};
+  document.querySelectorAll('#globalInputs .ig input').forEach(el=>{
+    g[el.dataset.id]=parseFloat(el.value)||0;
+  });
+  return {
+    revGrowth: g.revGrowth||3, expGrowth: g.expGrowth||2.5, taxRate: g.taxRate||28,
+    annualCapex: (g.annualCapex||500)*1000,
+    depRate: g.depRate||5,
+    loanAmt: (g.loanAmt||2000)*1000,
+    intRate: g.intRate||6.5, amortYrs: g.amortYrs||25,
+    initCash: (g.initCash||500)*1000,
+    initPPE: (g.initPPE||5000)*1000,
+    initEquity: (g.initEquity||2000)*1000,
+    distributions: (g.distributions||0)*1000,
+    arDays: g.arDays||20, apDays: g.apDays||30, invDays: g.invDays||30,
+  };
+}
+
+function toggleHist(){
+  const t=document.getElementById('histToggle');
+  const b=document.getElementById('histBody');
+  t.classList.toggle('open');
+  b.classList.toggle('open');
+}
+function getHistorical(){
+  const h={};
+  document.querySelectorAll('#historicalInputs .ig input').forEach(el=>{
+    const v=parseFloat(el.value);
+    h[el.dataset.id]=isNaN(v)?null:v*1000; // $K → $
+  });
+  return h;
+}
+
+// ═══════════════════════════════════════════════════════════
+//  RENDER ASSUMPTIONS
+// ═══════════════════════════════════════════════════════════
+function drvInput(drv){
+  const step=drv.fmt==='pct1'?0.1:drv.fmt==='int'?1:drv.fmt==='decimal'?0.01:1;
+  return `<div class="ig"><label>${drv.label}</label><input type="number" data-id="${drv.id}" value="${drv.def}" step="${step}" oninput="recalculate()"><span class="hint">${drv.hint}</span></div>`;
+}
+function renderAssumptions(industryKey){
+  const ind = INDUSTRIES[industryKey];
+  document.getElementById('assumptionsTitle').textContent = `${ind.label} — Assumptions`;
+  const body = document.getElementById('assumptionsBody');
+  let drvHTML='';
+  if(ind.driverGroups){
+    drvHTML=`<div id="driverInputs">${ind.driverGroups.map(grp=>`
+      <div class="section-lbl">${grp.label}</div>
+      <div class="drivers-grid">${grp.drivers.map(drvInput).join('')}</div>`).join('')}</div>`;
+  } else {
+    drvHTML=`<div class="section-lbl">${ind.icon} Operating Drivers — ${ind.label}</div>
+    <div class="drivers-grid" id="driverInputs">${ind.drivers.map(drvInput).join('')}</div>`;
+  }
+  body.innerHTML = `
+    <div class="note"><strong>Blue cells are editable inputs.</strong> All calculated fields update automatically as you type.</div>
+    ${drvHTML}
+    <div class="section-lbl">📈 Growth & Tax Assumptions</div>
+    <div class="drivers-grid" id="globalInputs">
+      <div class="ig"><label>Revenue Growth Rate (%/yr, Y2–Y5)</label><input type="number" data-id="revGrowth" value="3" step="0.1" oninput="recalculate()"><span class="hint">Annual revenue growth applied to base year</span></div>
+      <div class="ig"><label>Expense Growth Rate (%/yr)</label><input type="number" data-id="expGrowth" value="2.5" step="0.1" oninput="recalculate()"><span class="hint">Annual operating expense escalation</span></div>
+      <div class="ig"><label>Income Tax Rate (%)</label><input type="number" data-id="taxRate" value="28" step="0.5" oninput="recalculate()"><span class="hint">Effective combined federal + state rate</span></div>
+      <div class="ig"><label>Annual CapEx ($K)</label><input type="number" data-id="annualCapex" value="500" step="10" oninput="recalculate()"><span class="hint">Capital expenditures per year (maintenance + growth)</span></div>
+      <div class="ig"><label>Depreciation Rate (% of PP&E)</label><input type="number" data-id="depRate" value="5" step="0.5" oninput="recalculate()"><span class="hint">Straight-line rate (5% = 20-yr life)</span></div>
+      <div class="ig"><label>Annual Distributions / Owner Draw ($K)</label><input type="number" data-id="distributions" value="0" step="10" oninput="recalculate()"><span class="hint">Cash distributions to owners / equity holders</span></div>
+    </div>
+    <div class="section-lbl">🏦 Debt Service</div>
+    <div class="drivers-grid">
+      <div class="ig"><label>Total Loan Amount ($K)</label><input type="number" data-id="loanAmt" value="2000" step="50" oninput="recalculate()"><span class="hint">Outstanding principal balance at start</span></div>
+      <div class="ig"><label>Interest Rate (%)</label><input type="number" data-id="intRate" value="6.5" step="0.05" oninput="recalculate()"><span class="hint">Annual fixed or blended rate</span></div>
+      <div class="ig"><label>Amortization Period (Years)</label><input type="number" data-id="amortYrs" value="25" step="1" oninput="recalculate()"><span class="hint">Amortization schedule (e.g. 25-year)</span></div>
+    </div>
+    <div class="section-lbl">📋 Balance Sheet Starting Positions</div>
+    <div class="drivers-grid">
+      <div class="ig"><label>Initial Cash Balance ($K)</label><input type="number" data-id="initCash" value="500" step="50" oninput="recalculate()"><span class="hint">Cash on hand at start of Year 1</span></div>
+      <div class="ig"><label>Initial PP&E / Fixed Assets ($K)</label><input type="number" data-id="initPPE" value="5000" step="100" oninput="recalculate()"><span class="hint">Gross book value of property, plant, equipment</span></div>
+      <div class="ig"><label>Paid-in Capital / Equity ($K)</label><input type="number" data-id="initEquity" value="2000" step="50" oninput="recalculate()"><span class="hint">Total equity investment (sponsor + limited partners)</span></div>
+      <div class="ig"><label>AR Collection Days</label><input type="number" data-id="arDays" value="20" step="1" oninput="recalculate()"><span class="hint">Days of revenue in accounts receivable</span></div>
+      <div class="ig"><label>AP Payment Days</label><input type="number" data-id="apDays" value="30" step="1" oninput="recalculate()"><span class="hint">Days to pay vendors (accounts payable)</span></div>
+      <div class="ig"><label>Inventory Days</label><input type="number" data-id="invDays" value="30" step="1" oninput="recalculate()"><span class="hint">Days of COGS held in inventory (0 if not applicable)</span></div>
+    </div>
+    <div class="section-lbl hist-toggle" id="histToggle" onclick="toggleHist()">📋 Historical Actuals (optional — for ratio benchmarking)</div>
+    <div class="hist-body" id="histBody">
+      <div style="font-size:11px;color:var(--muted);margin-bottom:10px">Enter prior year actuals in $K. Used only in Financial Ratios tab for trend context.</div>
+      <div class="drivers-grid" id="historicalInputs">
+        <div class="ig"><label>H-2 Total Revenue ($K)</label><input type="number" data-id="h2_rev" value="" step="10" oninput="recalculate()"><span class="hint">Revenue two years prior</span></div>
+        <div class="ig"><label>H-2 EBITDA ($K)</label><input type="number" data-id="h2_ebitda" value="" step="10" oninput="recalculate()"><span class="hint">EBITDA two years prior</span></div>
+        <div class="ig"><label>H-2 Net Income ($K)</label><input type="number" data-id="h2_ni" value="" step="10" oninput="recalculate()"><span class="hint">Net income two years prior</span></div>
+        <div class="ig"><label>H-1 Total Revenue ($K)</label><input type="number" data-id="h1_rev" value="" step="10" oninput="recalculate()"><span class="hint">Revenue one year prior</span></div>
+        <div class="ig"><label>H-1 EBITDA ($K)</label><input type="number" data-id="h1_ebitda" value="" step="10" oninput="recalculate()"><span class="hint">EBITDA one year prior</span></div>
+        <div class="ig"><label>H-1 Net Income ($K)</label><input type="number" data-id="h1_ni" value="" step="10" oninput="recalculate()"><span class="hint">Net income one year prior</span></div>
+        <div class="ig"><label>LTM Total Revenue ($K)</label><input type="number" data-id="ltm_rev" value="" step="10" oninput="recalculate()"><span class="hint">Last twelve months revenue</span></div>
+        <div class="ig"><label>LTM EBITDA ($K)</label><input type="number" data-id="ltm_ebitda" value="" step="10" oninput="recalculate()"><span class="hint">Last twelve months EBITDA</span></div>
+        <div class="ig"><label>LTM Net Income ($K)</label><input type="number" data-id="ltm_ni" value="" step="10" oninput="recalculate()"><span class="hint">Last twelve months net income</span></div>
+      </div>
+    </div>`;
+}
+
+// ═══════════════════════════════════════════════════════════
+//  RENDER INCOME STATEMENT
+// ═══════════════════════════════════════════════════════════
+function renderIS(model){
+  const {years} = model;
+  const hdrs = years.map(y=>y.label);
+  let h = `<table class="ft"><thead><tr><th>Income Statement</th>${hdrs.map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>`;
+
+  // Pre-build lineMap per year (key = line label → line object)
+  const lineMaps = years.map(y=>{ const m={}; y.lines.forEach(ln=>{m[ln.l]=ln;}); return m; });
+
+  // Revenue section
+  h += secHdr('Revenue');
+  years[0].lines.forEach(row=>{
+    if(row.isSec){
+      h += secHdr(row.l);
+    } else if(row.isPct){
+      h += pctRow(row.l, years.map((_,i)=>{ const r=lineMaps[i][row.l]; return r?r.v:null; }));
+    } else if(row.isCount){
+      h += countRow(row.l, years.map((_,i)=>{ const r=lineMaps[i][row.l]; return r?r.v:null; }));
+    } else {
+      const cls = row.bold&&row.subtotal?'subtotal':row.bold?'':'';
+      const indent = row.indent===2?'i2':row.indent===1?'i1':'';
+      h += dataRow(row.l, years.map((_,i)=>{ const r=lineMaps[i][row.l]; return r?r.v:null; }), cls, indent, row.neg);
+    }
+  });
+
+  // EBITDA
+  h += `<tr class="ebitda-row"><td>EBITDA</td>${years.map(y=>`<td>${fD(y.ebitda)}</td>`).join('')}</tr>`;
+  h += pctRow('EBITDA Margin', years.map(y=>y.ebitdaMarginPct));
+
+  // Below EBITDA
+  h += secHdr('Below EBITDA');
+  h += dataRow('Depreciation & Amortization', years.map(y=>-y.da), '', 'i1', true);
+  h += dataRow('EBIT (Operating Income)', years.map(y=>y.ebit), 'subtotal', '');
+  h += dataRow('Interest Expense', years.map(y=>-y.intExp), '', 'i1', true);
+  h += dataRow('Earnings Before Tax (EBT)', years.map(y=>y.ebt), 'subtotal', '');
+  h += dataRow('Income Tax Provision', years.map(y=>-y.taxes), '', 'i1', true);
+  h += `<tr class="total"><td>Net Income</td>${years.map(y=>`<td>${fD(y.ni)}</td>`).join('')}</tr>`;
+  h += pctRow('Net Profit Margin', years.map(y=>y.netMarginPct));
+
+  h += '</tbody></table>';
+  document.getElementById('tbl-is').innerHTML = h;
+}
+
+// ═══════════════════════════════════════════════════════════
+//  RENDER BALANCE SHEET
+// ═══════════════════════════════════════════════════════════
+function renderBS(model){
+  const {years} = model;
+  const hdrs = years.map(y=>y.label);
+  let h = `<table class="ft"><thead><tr><th>Balance Sheet</th>${hdrs.map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>`;
+
+  h += secHdr('Assets');
+  h += dataRow('Cash & Cash Equivalents', years.map(y=>y.cashBalance), '', 'i1');
+  h += dataRow('Accounts Receivable', years.map(y=>y.ar), '', 'i1');
+  h += dataRow('Inventory', years.map(y=>y.inv), '', 'i1');
+  h += dataRow('Total Current Assets', years.map(y=>y.totalCurrentAssets), 'subtotal', '');
+  h += dataRow('PP&E (Gross)', years.map(y=>y.grossPPE), '', 'i1');
+  h += dataRow('Less: Accumulated Depreciation', years.map(y=>-y.cumDA), '', 'i1', true);
+  h += dataRow('Net PP&E', years.map(y=>y.netPPE), 'subtotal', '');
+  h += `<tr class="total"><td>Total Assets</td>${years.map(y=>`<td>${fD(y.totalAssets)}</td>`).join('')}</tr>`;
+
+  h += secHdr('Liabilities');
+  h += dataRow('Accounts Payable', years.map(y=>y.ap), '', 'i1');
+  h += dataRow('Accrued Liabilities', years.map(y=>y.accrued), '', 'i1');
+  h += dataRow('Current Portion of LT Debt', years.map(y=>y.currentLTD), '', 'i1');
+  h += dataRow('Total Current Liabilities', years.map(y=>y.totalCurrentLiab), 'subtotal', '');
+  h += dataRow('Long-Term Debt (Non-Current)', years.map(y=>y.ncLTD), '', 'i1');
+  h += dataRow('Total Liabilities', years.map(y=>y.totalLiab), 'subtotal', '');
+
+  h += secHdr('Equity');
+  h += dataRow('Paid-in Capital', years.map(y=>y.paidIn), '', 'i1');
+  h += dataRow('Retained Earnings', years.map(y=>y.retainedEarnings), '', 'i1');
+  h += dataRow('Total Equity', years.map(y=>y.totalEquity), 'subtotal', '');
+
+  h += `<tr class="total"><td>Total Liabilities & Equity</td>${years.map(y=>`<td>${fD(y.totalLiabEquity)}</td>`).join('')}</tr>`;
+  h += `<tr><td><strong>Balance Check (Assets − L&E)</strong></td>${years.map(y=>`<td class="${y.bsCheck?'chk-ok':'chk-err'}">${y.bsCheck?'✓ Balanced':'✗ Error'}</td>`).join('')}</tr>`;
+
+  h += '</tbody></table>';
+  document.getElementById('tbl-bs').innerHTML = h;
+}
+
+// ═══════════════════════════════════════════════════════════
+//  RENDER CASH FLOW
+// ═══════════════════════════════════════════════════════════
+function renderCF(model){
+  const {years} = model;
+  const hdrs = years.map(y=>y.label);
+  let h = `<table class="ft"><thead><tr><th>Cash Flow Statement (Indirect Method)</th>${hdrs.map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>`;
+
+  h += secHdr('Operating Activities');
+  h += dataRow('Net Income', years.map(y=>y.ni), '', 'i1');
+  h += dataRow('Add: Depreciation & Amortization', years.map(y=>y.da), '', 'i1');
+  h += dataRow('(Increase) / Decrease in AR', years.map(y=>-y.deltaAR), '', 'i1', false);
+  h += dataRow('(Increase) / Decrease in Inventory', years.map(y=>-y.deltaInv), '', 'i1', false);
+  h += dataRow('Increase / (Decrease) in AP', years.map(y=>y.deltaAP), '', 'i1');
+  h += dataRow('Increase / (Decrease) in Accruals', years.map(y=>y.deltaAccrued), '', 'i1');
+  h += dataRow('Cash from Operations', years.map(y=>y.cfo), 'subtotal', '');
+
+  h += secHdr('Investing Activities');
+  h += dataRow('Capital Expenditures', years.map(y=>y.cfi), '', 'i1', true);
+  h += dataRow('Cash from Investing', years.map(y=>y.cfi), 'subtotal', '');
+
+  h += secHdr('Financing Activities');
+  h += dataRow('Debt Principal Repayment', years.map(y=>-y.principal), '', 'i1', true);
+  h += dataRow('Distributions to Owners', years.map(y=>-model.g.distributions), '', 'i1', true);
+  h += dataRow('Cash from Financing', years.map(y=>y.cff), 'subtotal', '');
+
+  h += `<tr class="ebitda-row"><td>Net Change in Cash</td>${years.map(y=>`<td>${fD(y.netCF)}</td>`).join('')}</tr>`;
+  h += dataRow('Beginning Cash Balance', years.map(y=>y.begCash), '', '');
+  h += `<tr class="total"><td>Ending Cash Balance</td>${years.map(y=>`<td>${fD(y.cashBalance)}</td>`).join('')}</tr>`;
+
+  h += '</tbody></table>';
+  document.getElementById('tbl-cf').innerHTML = h;
+}
+
+// ═══════════════════════════════════════════════════════════
+//  RENDER FINANCIAL RATIOS
+// ═══════════════════════════════════════════════════════════
+function renderRatios(model){
+  const {years, g} = model;
+  const hist = getHistorical();
+  const haHist = hist.h2_rev||hist.h1_rev||hist.ltm_rev;
+
+  function ratioCell(v, good, warn, fmt){
+    if(v===null||v===undefined||isNaN(v)) return '<td>—</td>';
+    const cls = v>=good?'ratio-good':v>=warn?'ratio-warn':'ratio-bad';
+    let display;
+    if(fmt==='x') display=v.toFixed(2)+'x';
+    else if(fmt==='pct') display=fP(v);
+    else if(fmt==='dollar') display=fD(v);
+    else display=v.toFixed(2);
+    return `<td class="${cls}">${display}</td>`;
+  }
+  function ratioInvCell(v, bad, warn, fmt){
+    // Inverse: lower is better (e.g. Debt/EBITDA)
+    if(v===null||v===undefined||isNaN(v)||!isFinite(v)) return '<td>—</td>';
+    const cls = v<=bad?'ratio-good':v<=warn?'ratio-warn':'ratio-bad';
+    let display;
+    if(fmt==='x') display=v.toFixed(2)+'x';
+    else if(fmt==='pct') display=fP(v);
+    else display=v.toFixed(2);
+    return `<td class="${cls}">${display}</td>`;
+  }
+  function plainCell(v, fmt){
+    if(v===null||v===undefined||isNaN(v)) return '<td class="pct">—</td>';
+    if(fmt==='pct') return `<td class="pct">${fP(v)}</td>`;
+    if(fmt==='x') return `<td class="pct">${v.toFixed(2)}x</td>`;
+    if(fmt==='dollar') return `<td class="pct">${fD(v)}</td>`;
+    return `<td class="pct">${v.toFixed(2)}</td>`;
+  }
+
+  const yrHdrs = years.map(y=>`<th>${y.label}</th>`).join('');
+  const histHdrs = haHist ? `<th class="hist-col">H-2</th><th class="hist-col">H-1</th><th class="hist-col">LTM</th>` : '';
+
+  let h = `<table class="ft"><thead><tr><th>Financial Ratios</th>${haHist?histHdrs:''}${yrHdrs}</tr></thead><tbody>`;
+
+  // Helper to build a ratio row
+  function ratioRow(label, histVals, projVals, colorFn){
+    const histCells = haHist ? histVals.map(v=>plainCell(v,'x')).join('') : '';
+    const projCells = projVals.map(v=>colorFn(v)).join('');
+    return `<tr><td class="i1">${label}</td>${histCells}${projCells}</tr>`;
+  }
+
+  // ── COVERAGE ──
+  h += `<tr class="sec-hdr"><td colspan="${6+(haHist?3:0)}">Coverage Ratios</td></tr><tr class="sec-spc"><td colspan="${6+(haHist?3:0)}"></td></tr>`;
+  h += `<tr><td class="i1">Debt Service Coverage Ratio (DSCR)</td>${haHist?'<td class="hist-col pct">—</td><td class="hist-col pct">—</td><td class="hist-col pct">—</td>':''}${years.map(y=>ratioCell(y.dscr,1.25,1.0,'x')).join('')}</tr>`;
+  h += `<tr><td class="i1 pct">Threshold: ≥1.25x = <span class="ratio-good" style="padding:1px 5px;border-radius:3px">Strong</span> · ≥1.0x = <span class="ratio-warn" style="padding:1px 5px;border-radius:3px">Marginal</span> · &lt;1.0x = <span class="ratio-bad" style="padding:1px 5px;border-radius:3px">Deficient</span></td>${years.map(()=>'<td></td>').join('')}${haHist?'<td></td><td></td><td></td>':''}</tr>`;
+
+  const intCov = years.map(y=>y.intExp>0?y.ebitda/y.intExp:null);
+  h += `<tr><td class="i1">Interest Coverage (EBITDA / Interest)</td>${haHist?'<td class="hist-col pct">—</td><td class="hist-col pct">—</td><td class="hist-col pct">—</td>':''}${intCov.map(v=>ratioCell(v,3.0,1.5,'x')).join('')}</tr>`;
+
+  const fccr = years.map(y=>{ const fixedChg=y.intExp+y.principal+(-y.cfi); return fixedChg>0?y.ebitda/fixedChg:null; });
+  h += `<tr><td class="i1">Fixed Charge Coverage Ratio (FCCR)</td>${haHist?'<td class="hist-col pct">—</td><td class="hist-col pct">—</td><td class="hist-col pct">—</td>':''}${fccr.map(v=>ratioCell(v,1.25,1.0,'x')).join('')}</tr>`;
+  h += `<tr><td class="i1 pct">FCCR = EBITDA / (Interest + Principal + CapEx) · Threshold: ≥1.25x = <span class="ratio-good" style="padding:1px 5px;border-radius:3px">Strong</span> · ≥1.0x = <span class="ratio-warn" style="padding:1px 5px;border-radius:3px">Marginal</span> · &lt;1.0x = <span class="ratio-bad" style="padding:1px 5px;border-radius:3px">Deficient</span></td>${years.map(()=>'<td></td>').join('')}${haHist?'<td></td><td></td><td></td>':''}</tr>`;
+
+  // ── PROFITABILITY ──
+  h += `<tr class="sec-hdr"><td colspan="${6+(haHist?3:0)}">Profitability Ratios</td></tr><tr class="sec-spc"><td colspan="${6+(haHist?3:0)}"></td></tr>`;
+  const h2EbM = hist.h2_rev&&hist.h2_ebitda ? hist.h2_ebitda/hist.h2_rev*100 : null;
+  const h1EbM = hist.h1_rev&&hist.h1_ebitda ? hist.h1_ebitda/hist.h1_rev*100 : null;
+  const ltmEbM = hist.ltm_rev&&hist.ltm_ebitda ? hist.ltm_ebitda/hist.ltm_rev*100 : null;
+  h += `<tr><td class="i1">EBITDA Margin</td>${haHist?`<td class="hist-col pct">${h2EbM!==null?fP(h2EbM):'—'}</td><td class="hist-col pct">${h1EbM!==null?fP(h1EbM):'—'}</td><td class="hist-col pct">${ltmEbM!==null?fP(ltmEbM):'—'}</td>`:''}${years.map(y=>ratioCell(y.ebitdaMarginPct,20,10,'pct')).join('')}</tr>`;
+
+  const h2NiM = hist.h2_rev&&hist.h2_ni ? hist.h2_ni/hist.h2_rev*100 : null;
+  const h1NiM = hist.h1_rev&&hist.h1_ni ? hist.h1_ni/hist.h1_rev*100 : null;
+  const ltmNiM = hist.ltm_rev&&hist.ltm_ni ? hist.ltm_ni/hist.ltm_rev*100 : null;
+  h += `<tr><td class="i1">Net Profit Margin</td>${haHist?`<td class="hist-col pct">${h2NiM!==null?fP(h2NiM):'—'}</td><td class="hist-col pct">${h1NiM!==null?fP(h1NiM):'—'}</td><td class="hist-col pct">${ltmNiM!==null?fP(ltmNiM):'—'}</td>`:''}${years.map(y=>ratioCell(y.netMarginPct,10,4,'pct')).join('')}</tr>`;
+
+  h += `<tr><td class="i1">Gross Margin</td>${haHist?'<td class="hist-col pct">—</td><td class="hist-col pct">—</td><td class="hist-col pct">—</td>':''}${years.map(y=>{ const gm=y.totalRev>0?(y.grossProfit/y.totalRev*100):null; return ratioCell(gm,40,20,'pct'); }).join('')}</tr>`;
+
+  h += `<tr><td class="i1">Return on Assets (ROA)</td>${haHist?'<td class="hist-col pct">—</td><td class="hist-col pct">—</td><td class="hist-col pct">—</td>':''}${years.map(y=>ratioCell(y.roa,8,3,'pct')).join('')}</tr>`;
+
+  h += `<tr><td class="i1">Return on Equity (ROE)</td>${haHist?'<td class="hist-col pct">—</td><td class="hist-col pct">—</td><td class="hist-col pct">—</td>':''}${years.map(y=>{ const roe=y.totalEquity>0?y.ni/y.totalEquity*100:null; return ratioCell(roe,12,5,'pct'); }).join('')}</tr>`;
+
+  // ── LEVERAGE ──
+  h += `<tr class="sec-hdr"><td colspan="${6+(haHist?3:0)}">Leverage Ratios</td></tr><tr class="sec-spc"><td colspan="${6+(haHist?3:0)}"></td></tr>`;
+  h += `<tr><td class="i1">Total Debt / EBITDA</td>${haHist?'<td class="hist-col pct">—</td><td class="hist-col pct">—</td><td class="hist-col pct">—</td>':''}${years.map(y=>{ const de=y.ebitda>0?(y.totalLiab/y.ebitda):null; return ratioInvCell(de,4,6,'x'); }).join('')}</tr>`;
+  h += `<tr><td class="i1 pct">Threshold: ≤4.0x = <span class="ratio-good" style="padding:1px 5px;border-radius:3px">Low</span> · ≤6.0x = <span class="ratio-warn" style="padding:1px 5px;border-radius:3px">Moderate</span> · &gt;6.0x = <span class="ratio-bad" style="padding:1px 5px;border-radius:3px">High</span></td>${years.map(()=>'<td></td>').join('')}${haHist?'<td></td><td></td><td></td>':''}</tr>`;
+
+  h += `<tr><td class="i1">Debt / Equity Ratio</td>${haHist?'<td class="hist-col pct">—</td><td class="hist-col pct">—</td><td class="hist-col pct">—</td>':''}${years.map(y=>{ const de=y.totalEquity>0?(y.totalLiab/y.totalEquity):null; return ratioInvCell(de,1.5,3.0,'x'); }).join('')}</tr>`;
+
+  h += `<tr><td class="i1">Debt to Tangible Net Worth</td>${haHist?'<td class="hist-col pct">—</td><td class="hist-col pct">—</td><td class="hist-col pct">—</td>':''}${years.map(y=>{ const loanBal=y.currentLTD+y.ncLTD; const dtnw=y.totalEquity>0?loanBal/y.totalEquity:null; return ratioInvCell(dtnw,1.5,3.0,'x'); }).join('')}</tr>`;
+
+  const debtYield = years.map(y=>{ const loanBal=y.currentLTD+y.ncLTD; return loanBal>0?y.ni/loanBal*100:null; });
+  h += `<tr><td class="i1">Debt Yield (Net Income / Loan Balance)</td>${haHist?'<td class="hist-col pct">—</td><td class="hist-col pct">—</td><td class="hist-col pct">—</td>':''}${debtYield.map(v=>ratioCell(v,10,7,'pct')).join('')}</tr>`;
+  h += `<tr><td class="i1 pct">Threshold: ≥10% = <span class="ratio-good" style="padding:1px 5px;border-radius:3px">Strong</span> · ≥7% = <span class="ratio-warn" style="padding:1px 5px;border-radius:3px">Marginal</span> · &lt;7% = <span class="ratio-bad" style="padding:1px 5px;border-radius:3px">Weak</span></td>${years.map(()=>'<td></td>').join('')}${haHist?'<td></td><td></td><td></td>':''}</tr>`;
+
+  // ── LIQUIDITY ──
+  h += `<tr class="sec-hdr"><td colspan="${6+(haHist?3:0)}">Liquidity Ratios</td></tr><tr class="sec-spc"><td colspan="${6+(haHist?3:0)}"></td></tr>`;
+  h += `<tr><td class="i1">Current Ratio (Current Assets / Current Liab)</td>${haHist?'<td class="hist-col pct">—</td><td class="hist-col pct">—</td><td class="hist-col pct">—</td>':''}${years.map(y=>{ const cr=y.totalCurrentLiab>0?(y.totalCurrentAssets/y.totalCurrentLiab):null; return ratioCell(cr,2.0,1.0,'x'); }).join('')}</tr>`;
+
+  h += `<tr><td class="i1">Cash as % of Revenue</td>${haHist?'<td class="hist-col pct">—</td><td class="hist-col pct">—</td><td class="hist-col pct">—</td>':''}${years.map(y=>ratioCell(y.cashBalance/y.totalRev*100,10,5,'pct')).join('')}</tr>`;
+
+  h += `<tr><td class="i1">Free Cash Flow (CFO − CapEx)</td>${haHist?'<td class="hist-col pct">—</td><td class="hist-col pct">—</td><td class="hist-col pct">—</td>':''}${years.map(y=>{ const fcf=y.cfo+y.cfi; return `<td class="${fcf>=0?'ratio-good':'ratio-bad'}">${fD(fcf)}</td>`; }).join('')}</tr>`;
+
+  h += '</tbody></table>';
+  document.getElementById('tbl-ratios').innerHTML = h;
+}
+
+// ═══════════════════════════════════════════════════════════
+//  TABLE HELPERS
+// ═══════════════════════════════════════════════════════════
+function secHdr(label){ return `<tr class="sec-hdr"><td>${label}</td><td></td><td></td><td></td><td></td><td></td></tr><tr class="sec-spc"><td></td><td></td><td></td><td></td><td></td><td></td></tr>`; }
+function dataRow(label, vals, cls='', indent='', forceNeg=false){
+  const cells = vals.map(v=>{
+    if(v===null||v===undefined) return '<td>—</td>';
+    const neg = v<0||forceNeg;
+    return `<td class="${neg&&v!==0?'neg':''}">${fD(v)}</td>`;
+  }).join('');
+  return `<tr class="${cls}"><td class="${indent}">${label}</td>${cells}</tr>`;
+}
+function pctRow(label, vals){
+  const cells = vals.map(v=>v===null?'<td>—</td>':`<td class="pct">${fP(v)}</td>`).join('');
+  return `<tr><td class="i1 pct">${label}</td>${cells}</tr>`;
+}
+function countRow(label, vals){
+  const cells = vals.map(v=>v===null?'<td>—</td>':`<td>${fI(v)}</td>`).join('');
+  return `<tr><td class="i2">${label}</td>${cells}</tr>`;
+}
+
+// ═══════════════════════════════════════════════════════════
+//  RENDER DASHBOARD
+// ═══════════════════════════════════════════════════════════
+function renderDashboard(model){
+  const {years, ind} = model;
+  const y1 = years[0];
+  const y5 = years[4];
+
+  // DSCR badge
+  const dscr = y1.dscr;
+  const dscrCls = dscr===null?'':dscr>=1.25?'good':dscr>=1.0?'warn':'danger';
+  const dscrBadge = dscr===null?'<span class="kpi-badge badge-g">No Debt</span>':
+    dscr>=1.25?`<span class="kpi-badge badge-g">✓ Strong (≥1.25x)</span>`:
+    dscr>=1.0?`<span class="kpi-badge badge-y">⚠ Marginal (≥1.0x)</span>`:
+    `<span class="kpi-badge badge-r">✗ Below Coverage</span>`;
+
+  const kpi1 = y1.kpi1, kpi2 = y1.kpi2;
+
+  document.getElementById('kpiGrid').innerHTML = `
+    <div class="kpi ${dscrCls}">
+      <div class="kpi-lbl">Debt Service Coverage (Y1)</div>
+      <div class="kpi-val">${dscr===null?'N/A':fX(dscr)}</div>
+      <div class="kpi-sub">EBITDA / Annual Debt Service</div>
+      ${dscrBadge}
+    </div>
+    <div class="kpi">
+      <div class="kpi-lbl">EBITDA Margin (Y1)</div>
+      <div class="kpi-val">${fP(y1.ebitdaMarginPct)}</div>
+      <div class="kpi-sub">vs. ${fP(y5.ebitdaMarginPct)} in Year 5</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-lbl">Net Income (Y1)</div>
+      <div class="kpi-val">${fD(y1.ni)}</div>
+      <div class="kpi-sub">Net Margin: ${fP(y1.netMarginPct)}</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-lbl">Return on Assets (Y1)</div>
+      <div class="kpi-val">${fP(y1.roa)}</div>
+      <div class="kpi-sub">Net Income / Total Assets</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-lbl">${kpi1.label} (Y1)</div>
+      <div class="kpi-val">${kpi1.fmt==='dollar'?fD(kpi1.v):kpi1.fmt==='pct'?fP(kpi1.v):kpi1.v.toFixed(2)}</div>
+      <div class="kpi-sub">Industry KPI #1</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-lbl">${kpi2.label} (Y1)</div>
+      <div class="kpi-val">${kpi2.fmt==='dollar'?fD(kpi2.v):kpi2.fmt==='pct'?fP(kpi2.v):kpi2.v.toFixed(2)}</div>
+      <div class="kpi-sub">Industry KPI #2</div>
+    </div>`;
+
+  // Trend chart
+  if(chartTrend) chartTrend.destroy();
+  const tCtx = document.getElementById('chartTrend').getContext('2d');
+  chartTrend = new Chart(tCtx,{
+    type:'line',
+    data:{
+      labels:years.map(y=>y.label),
+      datasets:[
+        {label:'Total Revenue',data:years.map(y=>y.totalRev/1000),borderColor:'#28778a',backgroundColor:'rgba(40,119,138,.1)',fill:true,tension:.3,pointRadius:4,pointBackgroundColor:'#28778a'},
+        {label:'EBITDA',data:years.map(y=>y.ebitda/1000),borderColor:'#335599',backgroundColor:'rgba(51,85,153,.08)',fill:true,tension:.3,pointRadius:4,pointBackgroundColor:'#335599'},
+        {label:'Net Income',data:years.map(y=>y.ni/1000),borderColor:'#35858d',tension:.3,pointRadius:4,pointBackgroundColor:'#35858d',borderDash:[5,3]},
+      ]
+    },
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{family:'Inter',size:11},boxWidth:10,padding:12}},tooltip:{callbacks:{label:c=>`${c.dataset.label}: $${Math.round(c.raw).toLocaleString('en-US')}K`}}},scales:{x:{grid:{display:false},ticks:{font:{family:'Inter',size:11}}},y:{ticks:{font:{family:'Inter',size:11},callback:v=>'$'+v.toFixed(0)+'K'},grid:{color:'rgba(0,0,0,.05)'}}}}
+  });
+
+  // Industry breakdown chart (year 1)
+  if(chartBreak) chartBreak.destroy();
+  const chart = y1.chart;
+  document.getElementById('chart2Title').textContent = `${ind.label} — Revenue Mix (Year 1)`;
+  const bCtx = document.getElementById('chartBreak').getContext('2d');
+  chartBreak = new Chart(bCtx,{
+    type:'doughnut',
+    data:{
+      labels:chart.labels,
+      datasets:[{data:chart.data.map(v=>v<0?0:v),backgroundColor:['#28778a','#335599','#35858d','#3674a1','#4554a1'],borderWidth:2,borderColor:'#fff',hoverOffset:4}]
+    },
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{family:'Inter',size:11},boxWidth:10,padding:10}},tooltip:{callbacks:{label:c=>`${c.label}: ${fD(c.raw)}`}}},cutout:'60%'}
+  });
+}
+
+// ═══════════════════════════════════════════════════════════
+//  RENDER ALL
+// ═══════════════════════════════════════════════════════════
+function renderAll(){
+  if(!currentIndustry) return;
+  currentModel = buildModel(currentIndustry);
+  renderIS(currentModel);
+  renderBS(currentModel);
+  renderCF(currentModel);
+  renderRatios(currentModel);
+  renderDashboard(currentModel);
+}
+function recalculate(){ renderAll(); }
+
+// ═══════════════════════════════════════════════════════════
+//  TAB SWITCHING
+// ═══════════════════════════════════════════════════════════
+function switchTab(el, tabId){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('tab-'+tabId).classList.add('active');
+}
+
+// ═══════════════════════════════════════════════════════════
+//  INDUSTRY LOAD
+// ═══════════════════════════════════════════════════════════
+document.getElementById('industrySelect').addEventListener('change', function(){
+  const key = this.value;
+  if(!key){ document.getElementById('welcome').style.display='block'; document.getElementById('appMain').style.display='none'; return; }
+  currentIndustry = key;
+  document.getElementById('welcome').style.display='none';
+  document.getElementById('appMain').style.display='flex';
+  renderAssumptions(key);
+  renderAll();
+  window.scrollTo({top:0,behavior:'smooth'});
+});
+
+// ═══════════════════════════════════════════════════════════
+//  EXCEL EXPORT
+// ═══════════════════════════════════════════════════════════
+function getDriverRows(ind){
+  // Works for both flat drivers array and grouped driverGroups
+  const allDrivers = ind.driverGroups
+    ? ind.driverGroups.flatMap(g=>g.drivers)
+    : (ind.drivers||[]);
+  return allDrivers.map(drv=>{
+    const el=document.querySelector(`[data-id="${drv.id}"]`);
+    return [drv.label, el?parseFloat(el.value):drv.def];
+  });
+}
+function exportExcel(){
+  if(!currentModel){ alert('Please select an industry first.'); return; }
+  const {years, ind, g} = currentModel;
+  const wb = XLSX.utils.book_new();
+  const YRS = years.map(y=>y.label);
+
+  // ── Style palette matching the app UI ───────────────────────
+  const DARK='222A39', TEAL='28778A', LTGRAY='F6F7F9', GRAY='EBECEF', WHITE='FFFFFF';
+  function mkS(fill,fontClr,bold,sz,numFmt,halign){
+    const s={};
+    if(fill) s.fill={patternType:'solid',fgColor:{rgb:fill}};
+    s.font={color:{rgb:fontClr||DARK},bold:!!bold,sz:sz||11,name:'Calibri'};
+    s.alignment={horizontal:halign||'left',vertical:'center',wrapText:false};
+    if(numFmt) s.numFmt=numFmt;
+    return s;
+  }
+  const ST={
+    title:  {l:mkS(DARK,WHITE,true,13),      n:mkS(DARK,WHITE,true,13,null,'right')},
+    colHdr: {l:mkS(DARK,WHITE,true,11),      n:mkS(DARK,WHITE,true,11,null,'right')},
+    secHdr: {l:mkS(TEAL,WHITE,true,10),      n:mkS(TEAL,WHITE,true,10,null,'right')},
+    total:  {l:mkS(DARK,WHITE,true,12),      n:mkS(DARK,WHITE,true,12,'$#,##0','right')},
+    subtot: {l:mkS(GRAY,DARK,true,11),       n:mkS(GRAY,DARK,true,11,'$#,##0','right')},
+    data0:  {l:mkS(WHITE,DARK,false,11),     n:mkS(WHITE,DARK,false,11,'$#,##0','right')},
+    data1:  {l:mkS(LTGRAY,DARK,false,11),    n:mkS(LTGRAY,DARK,false,11,'$#,##0','right')},
+    pct0:   {l:mkS(WHITE,DARK,false,11),     n:mkS(WHITE,DARK,false,11,'0.00','right')},
+    pct1:   {l:mkS(LTGRAY,DARK,false,11),    n:mkS(LTGRAY,DARK,false,11,'0.00','right')},
+    empty:  {l:mkS(WHITE),                   n:mkS(WHITE)},
+    assHdr: {l:mkS(TEAL,WHITE,true,10),      n:mkS(TEAL,WHITE,true,10,null,'right')},
+    assKey: {l:mkS(LTGRAY,DARK,false,11),    n:mkS(LTGRAY,DARK,false,11,'#,##0.##','right')},
+    assKey0:{l:mkS(WHITE,DARK,false,11),     n:mkS(WHITE,DARK,false,11,'#,##0.##','right')},
+    bigHdr: {l:mkS(DARK,WHITE,true,14),      n:mkS(DARK,WHITE,true,14,null,'right')},
+  };
+
+  // Apply styles to a worksheet using a rowTypes array
+  function applyStyles(ws, rows, rowTypes){
+    rowTypes.forEach((type, ri)=>{
+      if(!type) return;
+      const numCols = rows[ri] ? rows[ri].length : 6;
+      for(let ci=0;ci<numCols;ci++){
+        const addr=XLSX.utils.encode_cell({r:ri,c:ci});
+        if(!ws[addr]) ws[addr]={t:'s',v:''};
+        const isNum = ci>0 && typeof rows[ri][ci]==='number';
+        const sk = ST[type];
+        if(!sk) continue;
+        const style = isNum ? sk.n : sk.l;
+        ws[addr].s = style;
+        if(style.numFmt) ws[addr].z = style.numFmt;
+      }
+    });
+  }
+
+  function addSheet(name, rows, rowTypes){
+    const ws = XLSX.utils.aoa_to_sheet(rows);
+    if(rowTypes) applyStyles(ws, rows, rowTypes);
+    ws['!cols'] = [{wch:38},{wch:16},{wch:16},{wch:16},{wch:16},{wch:16}];
+    XLSX.utils.book_append_sheet(wb, ws, name);
+  }
+
+  // ── Assumptions sheet ────────────────────────────────────────
+  const drvRows = getDriverRows(ind);
+  const assumRows = [
+    [`${ind.label} — Financial Model Assumptions`,'','',`Prepared: ${new Date().toLocaleDateString()}`],
+    [],
+    ['OPERATING DRIVERS','VALUE','','NOTE'],
+    ...drvRows,
+    [],
+    ['GLOBAL ASSUMPTIONS','VALUE'],
+    ['Revenue Growth Rate (%)', g.revGrowth],
+    ['Expense Growth Rate (%)', g.expGrowth],
+    ['Income Tax Rate (%)', g.taxRate],
+    ['Annual CapEx ($)', g.annualCapex],
+    ['Depreciation Rate (%)', g.depRate],
+    ['Loan Amount ($)', g.loanAmt],
+    ['Interest Rate (%)', g.intRate*100||g.intRate],
+    ['Amortization (Years)', g.amortYrs],
+    ['Initial Cash ($)', g.initCash],
+    ['Initial PP&E ($)', g.initPPE],
+    ['Paid-in Capital ($)', g.initEquity],
+    ['Annual Distributions ($)', g.distributions],
+    [],
+    ['NOTE: Edit assumptions in the Kreded app to recalculate financial statements.'],
+  ];
+  const drvLen = drvRows.length;
+  const assumTypes = [
+    'bigHdr','empty',
+    'assHdr',
+    ...drvRows.map((_,i)=>i%2===0?'assKey0':'assKey'),
+    'empty',
+    'assHdr',
+    ...[0,1,2,3,4,5,6,7,8,9,10,11].map(i=>i%2===0?'assKey0':'assKey'),
+    'empty','empty',
+  ];
+  addSheet('Assumptions', assumRows, assumTypes);
+
+  // ── Assumption context helper ─────────────────────────────────
+  const fmtK = v => '$'+(v/1000).toFixed(0)+'K';
+
+  // ── Income Statement ─────────────────────────────────────────
+  const xlLineMaps = years.map(y=>{ const m={}; y.lines.forEach(ln=>{m[ln.l]=ln;}); return m; });
+  const isRows = [
+    ['Income Statement',...YRS],
+    [`Assumptions: Rev Growth ${g.revGrowth}% | Exp Growth ${g.expGrowth}% | Tax ${g.taxRate}% | See Assumptions tab`],
+    ['REVENUE',...YRS.map(()=>'')],
+  ];
+  const isTypes = ['title','assKey0','secHdr'];
+  let isAlt=0;
+  years[0].lines.forEach(row=>{
+    if(row.isSec){
+      isRows.push([row.l,...YRS.map(()=>'')]);
+      isTypes.push('secHdr');
+      isAlt=0;
+    } else if(!row.isPct&&!row.isCount){
+      const isSub = row.bold&&row.subtotal;
+      isRows.push([row.l,...years.map((_,i)=>{ const r=xlLineMaps[i][row.l]; return r?Math.round(r.v):0; })]);
+      isTypes.push(isSub?'subtot':(isAlt++%2===0?'data0':'data1'));
+    }
+  });
+  isRows.push(['BELOW EBITDA',...YRS.map(()=>'')]); isTypes.push('secHdr'); isAlt=0;
+  isRows.push(['EBITDA',...years.map(y=>+y.ebitda.toFixed(0))]); isTypes.push('subtot');
+  isRows.push(['Depreciation & Amortization',...years.map(y=>+(-y.da).toFixed(0))]); isTypes.push(isAlt++%2===0?'data0':'data1');
+  isRows.push(['EBIT (Operating Income)',...years.map(y=>+y.ebit.toFixed(0))]); isTypes.push('subtot');
+  isRows.push(['Interest Expense',...years.map(y=>+(-y.intExp).toFixed(0))]); isTypes.push(isAlt++%2===0?'data0':'data1');
+  isRows.push(['Earnings Before Tax (EBT)',...years.map(y=>+y.ebt.toFixed(0))]); isTypes.push('subtot');
+  isRows.push(['Income Tax Provision',...years.map(y=>+(-y.taxes).toFixed(0))]); isTypes.push(isAlt++%2===0?'data0':'data1');
+  isRows.push(['Net Income',...years.map(y=>+y.ni.toFixed(0))]); isTypes.push('total');
+  isRows.push(['EBITDA Margin (%)',...years.map(y=>+y.ebitdaMarginPct.toFixed(2))]); isTypes.push('pct0');
+  isRows.push(['Net Profit Margin (%)',...years.map(y=>+y.netMarginPct.toFixed(2))]); isTypes.push('pct1');
+  addSheet('Income Statement', isRows, isTypes);
+
+  // ── Balance Sheet ────────────────────────────────────────────
+  const bsRows=[['Balance Sheet',...YRS]]; const bsTypes=['title'];
+  bsRows.push([`Opening: Cash ${fmtK(g.initCash)} | PP&E ${fmtK(g.initPPE)} | Loan ${fmtK(g.loanAmt)} | Paid-in Capital ${fmtK(g.initEquity)} | See Assumptions tab`]); bsTypes.push('assKey0');
+  bsRows.push(['ASSETS',...YRS.map(()=>'')]); bsTypes.push('secHdr');
+  let bsAlt=0;
+  const bsData=[
+    ['Cash & Cash Equivalents',years.map(y=>+y.cashBalance.toFixed(0)),'data'],
+    ['Accounts Receivable',years.map(y=>+y.ar.toFixed(0)),'data'],
+    ['Inventory',years.map(y=>+y.inv.toFixed(0)),'data'],
+    ['Total Current Assets',years.map(y=>+y.totalCurrentAssets.toFixed(0)),'subtot'],
+    ['PP&E (Gross)',years.map(y=>+y.grossPPE.toFixed(0)),'data'],
+    ['Less: Accumulated Depreciation',years.map(y=>+(-y.cumDA).toFixed(0)),'data'],
+    ['Net PP&E',years.map(y=>+y.netPPE.toFixed(0)),'subtot'],
+    ['Total Assets',years.map(y=>+y.totalAssets.toFixed(0)),'total'],
+    ['LIABILITIES',YRS.map(()=>''),'secHdr'],
+    ['Accounts Payable',years.map(y=>+y.ap.toFixed(0)),'data'],
+    ['Accrued Liabilities',years.map(y=>+y.accrued.toFixed(0)),'data'],
+    ['Current Portion of LT Debt',years.map(y=>+y.currentLTD.toFixed(0)),'data'],
+    ['Total Current Liabilities',years.map(y=>+y.totalCurrentLiab.toFixed(0)),'subtot'],
+    ['Long-Term Debt (Non-Current)',years.map(y=>+y.ncLTD.toFixed(0)),'data'],
+    ['Total Liabilities',years.map(y=>+y.totalLiab.toFixed(0)),'subtot'],
+    ['EQUITY',YRS.map(()=>''),'secHdr'],
+    ['Paid-in Capital',years.map(y=>+y.paidIn.toFixed(0)),'data'],
+    ['Retained Earnings',years.map(y=>+y.retainedEarnings.toFixed(0)),'data'],
+    ['Total Equity',years.map(y=>+y.totalEquity.toFixed(0)),'subtot'],
+    ['Total Liabilities & Equity',years.map(y=>+y.totalLiabEquity.toFixed(0)),'total'],
+    ['Balance Check',years.map(y=>y.bsCheck?'✓ OK':'✗ Error'),'pct0'],
+  ];
+  bsData.forEach(([lbl,vals,type])=>{
+    if(type==='secHdr'){ bsRows.push([lbl,...(Array.isArray(vals)?vals:YRS.map(()=>''))]); bsTypes.push('secHdr'); bsAlt=0; }
+    else if(type==='subtot'){ bsRows.push([lbl,...vals]); bsTypes.push('subtot'); }
+    else if(type==='total'){ bsRows.push([lbl,...vals]); bsTypes.push('total'); }
+    else if(type==='pct0'){ bsRows.push([lbl,...vals]); bsTypes.push('pct0'); }
+    else { bsRows.push([lbl,...vals]); bsTypes.push(bsAlt++%2===0?'data0':'data1'); }
+  });
+  addSheet('Balance Sheet', bsRows, bsTypes);
+
+  // ── Cash Flow Statement ──────────────────────────────────────
+  const cfRows=[['Cash Flow Statement',...YRS]]; const cfTypes=['title'];
+  cfRows.push([`CapEx ${fmtK(g.annualCapex)}/yr | Distributions ${fmtK(g.distributions)}/yr | Debt: ${(g.intRate*100).toFixed(2)}% over ${g.amortYrs} yrs | See Assumptions tab`]); cfTypes.push('assKey0');
+  let cfAlt=0;
+  const cfSections=[
+    {hdr:'OPERATING ACTIVITIES',rows:[
+      ['Net Income',years.map(y=>+y.ni.toFixed(0)),'data'],
+      ['+ Depreciation & Amortization',years.map(y=>+y.da.toFixed(0)),'data'],
+      ['Δ Accounts Receivable',years.map(y=>+(-y.deltaAR).toFixed(0)),'data'],
+      ['Δ Inventory',years.map(y=>+(-y.deltaInv).toFixed(0)),'data'],
+      ['Δ Accounts Payable',years.map(y=>+y.deltaAP.toFixed(0)),'data'],
+      ['Δ Accrued Liabilities',years.map(y=>+y.deltaAccrued.toFixed(0)),'data'],
+      ['Cash from Operations',years.map(y=>+y.cfo.toFixed(0)),'subtot'],
+    ]},
+    {hdr:'INVESTING ACTIVITIES',rows:[
+      ['Capital Expenditures',years.map(y=>+y.cfi.toFixed(0)),'data'],
+      ['Cash from Investing',years.map(y=>+y.cfi.toFixed(0)),'subtot'],
+    ]},
+    {hdr:'FINANCING ACTIVITIES',rows:[
+      ['Debt Repayment',years.map(y=>+(-y.principal).toFixed(0)),'data'],
+      ['Distributions',years.map(y=>+(-g.distributions).toFixed(0)),'data'],
+      ['Cash from Financing',years.map(y=>+y.cff.toFixed(0)),'subtot'],
+    ]},
+    {hdr:'CASH SUMMARY',rows:[
+      ['Net Change in Cash',years.map(y=>+y.netCF.toFixed(0)),'subtot'],
+      ['Beginning Cash',years.map(y=>+y.begCash.toFixed(0)),'data'],
+      ['Ending Cash Balance',years.map(y=>+y.cashBalance.toFixed(0)),'total'],
+    ]},
+  ];
+  cfSections.forEach(sec=>{
+    cfRows.push([sec.hdr,...YRS.map(()=>'')]); cfTypes.push('secHdr'); cfAlt=0;
+    sec.rows.forEach(([lbl,vals,type])=>{
+      cfRows.push([lbl,...vals]);
+      cfTypes.push(type==='subtot'?'subtot':type==='total'?'total':(cfAlt++%2===0?'data0':'data1'));
+    });
+  });
+  addSheet('Cash Flow', cfRows, cfTypes);
+
+  // ── KPI Dashboard ────────────────────────────────────────────
+  const dashRows=[['KPI Dashboard',...YRS],['KEY METRICS',...YRS.map(()=>'')]];
+  const dashTypes=['title','secHdr'];
+  const dashData=[
+    ['Total Revenue',years.map(y=>+y.totalRev.toFixed(0)),'subtot'],
+    ['EBITDA',years.map(y=>+y.ebitda.toFixed(0)),'data0'],
+    ['EBITDA Margin (%)',years.map(y=>+y.ebitdaMarginPct.toFixed(2)),'pct1'],
+    ['Net Income',years.map(y=>+y.ni.toFixed(0)),'data0'],
+    ['Net Margin (%)',years.map(y=>+y.netMarginPct.toFixed(2)),'pct1'],
+    ['DSCR',years.map(y=>y.dscr?+y.dscr.toFixed(2):'N/A'),'pct0'],
+    ['Return on Assets (%)',years.map(y=>+y.roa.toFixed(2)),'pct1'],
+    ['Total Assets',years.map(y=>+y.totalAssets.toFixed(0)),'data0'],
+    ['Total Debt',years.map(y=>+(y.currentLTD+y.ncLTD).toFixed(0)),'data1'],
+    ['Total Equity',years.map(y=>+y.totalEquity.toFixed(0)),'subtot'],
+  ];
+  dashData.forEach(([lbl,vals,type])=>{ dashRows.push([lbl,...vals]); dashTypes.push(type); });
+  addSheet('Dashboard', dashRows, dashTypes);
+
+  // ── Financial Ratios ─────────────────────────────────────────
+  const ratRows=[['Financial Ratios',...YRS]]; const ratTypes=['title'];
+  const ratSections=[
+    {hdr:'COVERAGE',rows:[
+      ['DSCR (EBITDA / Debt Service)',years.map(y=>y.dscr?+y.dscr.toFixed(2):'N/A')],
+      ['Interest Coverage (EBITDA / Interest)',years.map(y=>y.intExp>0?+(y.ebitda/y.intExp).toFixed(2):'N/A')],
+      ['Fixed Charge Coverage Ratio (FCCR)',years.map(y=>{ const fc=y.intExp+y.principal+(-y.cfi); return fc>0?+(y.ebitda/fc).toFixed(2):'N/A'; })],
+    ]},
+    {hdr:'PROFITABILITY',rows:[
+      ['EBITDA Margin (%)',years.map(y=>+y.ebitdaMarginPct.toFixed(2))],
+      ['Net Profit Margin (%)',years.map(y=>+y.netMarginPct.toFixed(2))],
+      ['Gross Margin (%)',years.map(y=>+(y.grossProfit/y.totalRev*100).toFixed(2))],
+      ['Return on Assets (%)',years.map(y=>+y.roa.toFixed(2))],
+      ['Return on Equity (%)',years.map(y=>y.totalEquity>0?+(y.ni/y.totalEquity*100).toFixed(2):0)],
+    ]},
+    {hdr:'LEVERAGE',rows:[
+      ['Total Debt / EBITDA (x)',years.map(y=>y.ebitda>0?+(y.totalLiab/y.ebitda).toFixed(2):'N/A')],
+      ['Debt / Equity (x)',years.map(y=>y.totalEquity>0?+(y.totalLiab/y.totalEquity).toFixed(2):'N/A')],
+      ['Debt to Tangible Net Worth (x)',years.map(y=>{ const lb=y.currentLTD+y.ncLTD; return y.totalEquity>0?+(lb/y.totalEquity).toFixed(2):'N/A'; })],
+      ['Debt Yield (Net Income / Loan Bal, %)',years.map(y=>{ const lb=y.currentLTD+y.ncLTD; return lb>0?+(y.ni/lb*100).toFixed(2):'N/A'; })],
+    ]},
+    {hdr:'LIQUIDITY',rows:[
+      ['Current Ratio (x)',years.map(y=>y.totalCurrentLiab>0?+(y.totalCurrentAssets/y.totalCurrentLiab).toFixed(2):'N/A')],
+      ['Cash / Revenue (%)',years.map(y=>+(y.cashBalance/y.totalRev*100).toFixed(2))],
+      ['Free Cash Flow ($)',years.map(y=>+(y.cfo+y.cfi).toFixed(0))],
+    ]},
+  ];
+  ratSections.forEach(sec=>{
+    ratRows.push([sec.hdr,...YRS.map(()=>'')]); ratTypes.push('secHdr');
+    let ra=0;
+    sec.rows.forEach(([lbl,vals])=>{ ratRows.push([lbl,...vals]); ratTypes.push(ra++%2===0?'pct0':'pct1'); });
+  });
+  addSheet('Financial Ratios', ratRows, ratTypes);
+
+  XLSX.writeFile(wb, `Kreded_${ind.label.replace(/\W+/g,'_')}_Model.xlsx`);
+}
+
+// ═══════════════════════════════════════════════════════════
+//  PDF EXPORT
+// ═══════════════════════════════════════════════════════════
+function exportPDF(){
+  if(!currentModel){ alert('Please select an industry first.'); return; }
+  const {years, ind} = currentModel;
+  const {jsPDF} = window.jspdf;
+  const doc = new jsPDF({orientation:'landscape',unit:'mm',format:'a4'});
+  const pageW = doc.internal.pageSize.getWidth();
+
+  // Header
+  doc.setFillColor(34,42,57);
+  doc.rect(0,0,pageW,22,'F');
+  doc.setTextColor(255,255,255);
+  doc.setFontSize(16); doc.setFont('helvetica','bold');
+  doc.text('KREDED', 14, 13);
+  doc.setFontSize(11); doc.setFont('helvetica','normal');
+  doc.setTextColor(40,119,138);
+  doc.text('Financial Model Suite', 40, 13);
+  doc.setTextColor(200,200,200);
+  doc.setFontSize(9);
+  doc.text(ind.label + ' | 5-Year Projection | ' + new Date().toLocaleDateString(), pageW-14, 13, {align:'right'});
+
+  let yPos = 30;
+
+  // KPI Summary
+  doc.setTextColor(40,119,138); doc.setFontSize(10); doc.setFont('helvetica','bold');
+  doc.text('KEY PERFORMANCE INDICATORS — YEAR 1', 14, yPos); yPos += 6;
+  const y1 = years[0];
+  const kpis = [
+    ['DSCR', y1.dscr?fX(y1.dscr):'N/A'], ['EBITDA Margin', fP(y1.ebitdaMarginPct)],
+    ['Net Income', fD(y1.ni)], ['ROA', fP(y1.roa)],
+    [y1.kpi1.label, y1.kpi1.fmt==='dollar'?fD(y1.kpi1.v):fP(y1.kpi1.v)],
+    [y1.kpi2.label, y1.kpi2.fmt==='dollar'?fD(y1.kpi2.v):fP(y1.kpi2.v)],
+  ];
+  const cardW = (pageW-28)/6;
+  kpis.forEach((k,i)=>{
+    const x=14+i*cardW;
+    doc.setFillColor(246,247,249); doc.roundedRect(x,yPos,cardW-2,18,1,1,'F');
+    doc.setTextColor(103,111,126); doc.setFontSize(7); doc.setFont('helvetica','normal');
+    doc.text(k[0].toUpperCase(), x+2, yPos+5);
+    doc.setTextColor(34,42,57); doc.setFontSize(10); doc.setFont('helvetica','bold');
+    doc.text(k[1], x+2, yPos+13);
+  });
+  yPos += 26;
+
+  // Income Statement Table
+  doc.setTextColor(40,119,138); doc.setFontSize(10); doc.setFont('helvetica','bold');
+  doc.text('INCOME STATEMENT', 14, yPos); yPos += 4;
+
+  const isHead = [['Line Item','Year 1','Year 2','Year 3','Year 4','Year 5']];
+  const isBody = [];
+  years[0].lines.filter(r=>!r.isPct&&!r.isCount).forEach(row=>{
+    isBody.push([row.l, ...years.map(y=>{ const r=y.lines.find(x=>x.l===row.l); return r?fD(r.v):'—'; })]);
+  });
+  isBody.push(['EBITDA', ...years.map(y=>fD(y.ebitda))]);
+  isBody.push(['D&A', ...years.map(y=>fD(-y.da))]);
+  isBody.push(['Interest Expense', ...years.map(y=>fD(-y.intExp))]);
+  isBody.push(['Net Income', ...years.map(y=>fD(y.ni))]);
+
+  doc.autoTable({
+    startY: yPos, head: isHead, body: isBody,
+    styles:{font:'helvetica',fontSize:7,cellPadding:2},
+    headStyles:{fillColor:[34,42,57],textColor:[255,255,255],fontStyle:'bold'},
+    alternateRowStyles:{fillColor:[246,247,249]},
+    columnStyles:{0:{cellWidth:70}},
+    margin:{left:14,right:14},
+  });
+  yPos = doc.lastAutoTable.finalY + 8;
+
+  // New page for BS and CF
+  doc.addPage();
+  doc.setFillColor(34,42,57); doc.rect(0,0,pageW,22,'F');
+  doc.setTextColor(255,255,255); doc.setFontSize(16); doc.setFont('helvetica','bold');
+  doc.text('KREDED', 14, 13);
+  doc.setTextColor(40,119,138); doc.setFontSize(11); doc.setFont('helvetica','normal');
+  doc.text('Financial Model Suite', 40, 13);
+  doc.setTextColor(200,200,200); doc.setFontSize(9);
+  doc.text(ind.label + ' | Balance Sheet & Cash Flow', pageW-14, 13, {align:'right'});
+
+  yPos = 30;
+  doc.setTextColor(40,119,138); doc.setFontSize(10); doc.setFont('helvetica','bold');
+  doc.text('BALANCE SHEET', 14, yPos); yPos += 4;
+
+  doc.autoTable({
+    startY: yPos,
+    head:[['Line Item','Year 1','Year 2','Year 3','Year 4','Year 5']],
+    body:[
+      ['Cash & Equivalents', ...years.map(y=>fD(y.cashBalance))],
+      ['Accounts Receivable', ...years.map(y=>fD(y.ar))],
+      ['Total Current Assets', ...years.map(y=>fD(y.totalCurrentAssets))],
+      ['Net PP&E', ...years.map(y=>fD(y.netPPE))],
+      ['Total Assets', ...years.map(y=>fD(y.totalAssets))],
+      ['Total Liabilities', ...years.map(y=>fD(y.totalLiab))],
+      ['Total Equity', ...years.map(y=>fD(y.totalEquity))],
+      ['Balance Check', ...years.map(y=>y.bsCheck?'✓ OK':'✗ Error')],
+    ],
+    styles:{font:'helvetica',fontSize:7,cellPadding:2},
+    headStyles:{fillColor:[34,42,57],textColor:[255,255,255],fontStyle:'bold'},
+    alternateRowStyles:{fillColor:[246,247,249]},
+    columnStyles:{0:{cellWidth:70}},
+    margin:{left:14,right:14},
+  });
+  yPos = doc.lastAutoTable.finalY + 8;
+
+  doc.setTextColor(40,119,138); doc.setFontSize(10); doc.setFont('helvetica','bold');
+  doc.text('CASH FLOW STATEMENT', 14, yPos); yPos += 4;
+
+  doc.autoTable({
+    startY: yPos,
+    head:[['Line Item','Year 1','Year 2','Year 3','Year 4','Year 5']],
+    body:[
+      ['Cash from Operations', ...years.map(y=>fD(y.cfo))],
+      ['Cash from Investing', ...years.map(y=>fD(y.cfi))],
+      ['Cash from Financing', ...years.map(y=>fD(y.cff))],
+      ['Net Change in Cash', ...years.map(y=>fD(y.netCF))],
+      ['Ending Cash Balance', ...years.map(y=>fD(y.cashBalance))],
+    ],
+    styles:{font:'helvetica',fontSize:7,cellPadding:2},
+    headStyles:{fillColor:[34,42,57],textColor:[255,255,255],fontStyle:'bold'},
+    alternateRowStyles:{fillColor:[246,247,249]},
+    columnStyles:{0:{cellWidth:70}},
+    margin:{left:14,right:14},
+  });
+
+  // Footer
+  const pages = doc.internal.getNumberOfPages();
+  for(let p=1;p<=pages;p++){
+    doc.setPage(p);
+    doc.setFontSize(7); doc.setTextColor(150,150,150); doc.setFont('helvetica','normal');
+    doc.text('Prepared by Kreded | kreded.com | Strategic Credit Conversations & Better Credit Discipline', 14, doc.internal.pageSize.getHeight()-6);
+    doc.text(`Page ${p} of ${pages}`, pageW-14, doc.internal.pageSize.getHeight()-6, {align:'right'});
+  }
+
+  doc.save(`Kreded_${ind.label.replace(/\W+/g,'_')}_Model.pdf`);
+}
+
+// ═══════════════════════════════════════════════════════════
+//  DEMO MODE  (activated by ?demo=1 in URL)
+// ═══════════════════════════════════════════════════════════
+(function initDemoMode(){
+  if(!new URLSearchParams(location.search).has('demo')) return;
+
+  // Show sticky banner
+  document.getElementById('demo-banner').style.display = 'flex';
+
+  // Restrict industry selector to 3 demo industries
+  const DEMO_KEYS = new Set(['hotel','restaurant','selfstore']);
+  Array.from(document.getElementById('industrySelect').options).forEach(opt=>{
+    if(opt.value && !DEMO_KEYS.has(opt.value)) opt.disabled = true;
+  });
+
+  // Disable export buttons
+  document.querySelectorAll('button[onclick="exportExcel()"],button[onclick="exportPDF()"]').forEach(btn=>{
+    btn.disabled = true;
+    btn.title = 'Available in the full version';
+  });
+
+  // Block exports even if called directly
+  const _origExcel = window.exportExcel;
+  const _origPDF   = window.exportPDF;
+  window.exportExcel = ()=>alert('Export is available in the full version.\nVisit kreded.com to purchase.');
+  window.exportPDF   = ()=>alert('Export is available in the full version.\nVisit kreded.com to purchase.');
+
+  // Add watermark to all table wrappers after every render
+  const _origRenderAll = window.renderAll;
+  window.renderAll = function(){
+    _origRenderAll.apply(this, arguments);
+    document.querySelectorAll('.tbl-wrap').forEach(wrap=>{
+      if(!wrap.querySelector('.demo-wm')){
+        const wm = document.createElement('div');
+        wm.className = 'demo-wm';
+        wm.textContent = 'DEMO — kreded.com';
+        wrap.appendChild(wm);
+      }
+    });
+  };
+})();
+</script>
+</body>
+</html>
